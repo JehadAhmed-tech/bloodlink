@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodLink - Emergency Blood Donation</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="logo">
+            <span class="drop-icon">🩸</span>
+            <span>Blood<b>Link</b></span>
+        </div>
+
+        <nav>
+            <a href="javascript:void(0)" id="nav-home" class="active" onclick="showPage('home')">Home</a>
+            <a href="javascript:void(0)" id="nav-requests" onclick="showPage('requests')">Requests</a>
+            <a href="javascript:void(0)" id="nav-mydonor" onclick="showPage('mydonor')">My Donor</a>
+            <a href="javascript:void(0)" class="open-request-btn" id="post-request-nav-btn">Post Request</a>
+
+        </nav>
+
+        <div class="nav-btns">
+            <button class="btn-signin" onclick="openModal()">Sign In</button>
+            <button class="btn-donate" onclick="openAuthModal()">Donate Now</button>
+        </div>
+    </header>
+
+    <!-- ================= HOME PAGE ================= -->
+    <main id="page-home">
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="badge-network">
+                <span class="dot"></span> LIVE EMERGENCY NETWORK
+            </div>
+
+            <h1 class="hero-title">
+                Every Second<br>
+                <span class="text-red-glow">Counts.</span>
+            </h1>
+
+            <p class="hero-sub">
+                Connect blood donors with patients in critical need — in real time.
+                One tap can save a life today.
+            </p>
+
+            <div class="hero-action-btns">
+                <button class="btn-request-main" onclick="showPage('requests')">
+                    📞 Request Blood Now
+                </button>
+
+                <button class="btn-secondary" onclick="showPage('mydonor')">
+                    Become a Donor
+                </button>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-card-box">
+                <span class="search-label">FIND DONORS NEARBY</span>
+
+                <div class="search-inputs">
+                    <select class="input-select">
+                        <option>Blood Group</option>
+                        <option>A+</option>
+                        <option>A-</option>
+                        <option>B+</option>
+                        <option>B-</option>
+                        <option>O+</option>
+                        <option>O-</option>
+                        <option>AB+</option>
+                        <option>AB-</option>
+                    </select>
+
+                    <input
+                        type="text"
+                        class="input-text"
+                        placeholder="City or Hospital Name"
+                    >
+
+                    <button class="btn-search">🔍 Search</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+
+            <div class="stat-box">
+                <div class="stat-icon red-icon">🩸</div>
+                <h2>1,284</h2>
+                <p>Active Requests</p>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon purple-icon">👤</div>
+                <h2>8,732</h2>
+                <p>Donors Online</p>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon pink-icon">❤️</div>
+                <h2>42,100+</h2>
+                <p>Lives Saved</p>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon pin-icon">📍</div>
+                <h2>186</h2>
+                <p>Cities Covered</p>
+            </div>
+
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="how-it-works">
+            <h2 class="serif-title center">How BloodLink Works</h2>
+
+            <div class="works-grid">
+
+                <div class="work-card">
+                    <span class="num">01</span>
+                    <h3>Post an Emergency</h3>
+                    <p>
+                        Submit a blood request in under 60 seconds with patient
+                        details, blood group, and hospital.
+                    </p>
+                </div>
+
+                <div class="work-card">
+                    <span class="num">02</span>
+                    <h3>Instant Alerts</h3>
+                    <p>
+                        Nearby donors get real-time notifications. Compatible
+                        blood groups are matched automatically.
+                    </p>
+                </div>
+
+                <div class="work-card">
+                    <span class="num">03</span>
+                    <h3>Coordinate & Donate</h3>
+                    <p>
+                        Confirm via in-app chat, head to the hospital, and save a life.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Live Requests Preview -->
+        <section class="live-requests-section">
+
+            <div class="section-header">
+                <h2 class="serif-title">Live Requests</h2>
+                <button class="btn-view-all" onclick="showPage('requests')">
+                    View All →
+                </button>
+            </div>
+
+            <div class="requests-grid">
+
+                <!-- Request 1 -->
+                <div class="req-card critical border-glow">
+                    <div class="card-top">
+
+                        <div class="blood-badge">O+</div>
+
+                        <div class="details">
+                            <h3>Tanvir Hossain</h3>
+                            <span>Square Hospital · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag critical">
+                            • CRITICAL
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count red">1/3</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 33%;"></div>
+                    </div>
+
+                    <span class="time-ago">12 min ago</span>
+                </div>
+
+                <!-- Request 2 -->
+                <div class="req-card" data-category="urgent">
+
+                    <div class="card-top">
+
+                        <div class="blood-badge">AB-</div>
+
+                        <div class="details">
+                            <h3>Nusrat Jahan</h3>
+                            <span>Dhaka Medical College Hospital · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag urgent">
+                            URGENT
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count red">2/2</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 100%;"></div>
+                    </div>
+
+                    <span class="time-ago">34 min ago</span>
+                </div>
+
+                <!-- Request 3 -->
+                <div class="req-card" data-category="urgent">
+
+                    <div class="card-top">
+
+                        <div class="blood-badge">B+</div>
+
+                        <div class="details">
+                            <h3>Sadia Rahman</h3>
+                            <span>Evercare Hospital · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag urgent">
+                            URGENT
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count red">1/4</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 25%;"></div>
+                    </div>
+
+                    <span class="time-ago">1 hr ago</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CTA Banner -->
+        <section class="cta-section">
+
+            <div class="cta-banner">
+                <h2 class="serif-title">Ready to Save Lives?</h2>
+
+                <p>
+                    Register as a donor today. Your blood can save up to 3 lives per donation.
+                </p>
+
+                <button class="btn-donate-banner" onclick="openRegisterModal()">
+                    Register as Donor
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= REQUESTS PAGE ================= -->
+    <main id="page-requests" style="display: none;">
+
+        <div class="requests-page-container">
+
+            <div class="req-header-text">
+
+                <span class="badge-live">• LIVE FEED</span>
+
+                <h1 class="serif-title">
+                    Emergency Requests
+                </h1>
+
+                <p class="sub-text">
+                    Real-time blood donation requests across Bangladesh —
+                    updated every 30 seconds.
+                </p>
+
+            </div>
+
+            <!-- লাইভ রক্তের রিকোয়েস্টের কার্ডগুলো এখানে ডাটাবেজ থেকে এসে শো করবে -->
+            <div id="requests-container" class="requests-grid"></div>
+
+            <!-- Stat Counters -->
+            <div class="req-stats-grid">
+
+                <div class="req-stat-card">
+                    <span class="num white">5</span>
+                    <span class="label">Total Requests</span>
+                </div>
+
+                <div class="req-stat-card">
+                    <span class="num red">2</span>
+                    <span class="label">Critical</span>
+                </div>
+
+                <div class="req-stat-card">
+                    <span class="num yellow">2</span>
+                    <span class="label">Urgent</span>
+                </div>
+
+                <div class="req-stat-card">
+                    <span class="num green">3</span>
+                    <span class="label">Fulfilled Today</span>
+                </div>
+
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="filter-bar">
+
+                <div class="filter-tabs">
+
+                    <button
+                        class="tab-btn active"
+                        onclick="filterRequests('all', this)"
+                    >
+                        All Requests
+                    </button>
+
+                    <button
+                        class="tab-btn"
+                        onclick="filterRequests('critical', this)"
+                    >
+                        Critical
+                    </button>
+
+                    <button
+                        class="tab-btn"
+                        onclick="filterRequests('urgent', this)"
+                    >
+                        Urgent
+                    </button>
+
+                    <button
+                        class="tab-btn"
+                        onclick="filterRequests('moderate', this)"
+                    >
+                        Moderate
+                    </button>
+
+                </div>
+
+                <select class="blood-group-select">
+                    <option>All Blood Groups</option>
+                    <option>A+</option>
+                    <option>A-</option>
+                    <option>B+</option>
+                    <option>B-</option>
+                    <option>O+</option>
+                    <option>O-</option>
+                    <option>AB+</option>
+                    <option>AB-</option>
+                </select>
+
+            </div>
+
+
+            <!-- Cards Grid -->
+            <div class="cards-grid">
+
+                <!-- Card 1 -->
+                <div class="req-card critical border-glow">
+
+                    <div class="card-top">
+
+                        <div class="blood-badge">O+</div>
+
+                        <div class="details">
+                            <h3>Tanvir Hossain</h3>
+                            <span>Square Hospital · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag critical">
+                            • CRITICAL
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count red">1/3</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 33%;"></div>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="time">12 min ago</span>
+
+                        <button
+                            class="btn-respond"
+                            onclick="handleRespond(this)"
+                        >
+                            Respond
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- Card 2 -->
+                <div class="req-card" data-category="urgent">
+
+                    <div class="card-top">
+
+                        <div class="blood-badge">AB-</div>
+
+                        <div class="details">
+                            <h3>Nusrat Jahan</h3>
+                            <span>Dhaka Medical College Hospital · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag urgent">
+                            URGENT
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count red">2/2</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 100%;"></div>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="time">34 min ago</span>
+
+                        <button
+                            class="btn-respond"
+                            onclick="handleRespond(this)"
+                        >
+                            Respond
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- Card 3 -->
+                <div class="req-card" data-category="urgent">
+
+                    <div class="card-top">
+
+                        <div class="blood-badge">B+</div>
+
+                        <div class="details">
+                            <h3>Sadia Rahman</h3>
+                            <span>Evercare Hospital · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag urgent">
+                            URGENT
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count red">1/4</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 25%;"></div>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="time">1 hr ago</span>
+
+                        <button
+                            class="btn-respond"
+                            onclick="handleRespond(this)"
+                        >
+                            Respond
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- Card 4 -->
+                <div class="req-card" data-category="moderate">
+
+                    <div class="card-top">
+
+                        <div class="blood-badge">A+</div>
+
+                        <div class="details">
+                            <h3>Fahim Ahmed</h3>
+                            <span>United Hospital · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag moderate">
+                            MODERATE
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count">0/2</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 0%;"></div>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="time">2 hrs ago</span>
+
+                        <button
+                            class="btn-respond"
+                            onclick="handleRespond(this)"
+                        >
+                            Respond
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- Card 5 -->
+                <div
+                    class="req-card critical border-glow"
+                    data-category="critical"
+                >
+
+                    <div class="card-top">
+
+                        <div class="blood-badge">O-</div>
+
+                        <div class="details">
+                            <h3>Mim Akter</h3>
+                            <span>BSMMU · Dhaka</span>
+                        </div>
+
+                        <span class="badge-tag critical">
+                            • CRITICAL
+                        </span>
+
+                    </div>
+
+                    <div class="progress-info">
+                        <span>Bags fulfilled</span>
+                        <span class="count red">3/5</span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 60%;"></div>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="time">3 hrs ago</span>
+
+                        <button
+                            class="btn-respond"
+                            onclick="handleRespond(this)"
+                        >
+                            Respond
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ================= MY DONOR PAGE ================= -->
+    <main id="page-mydonor" style="display: none;">
+
+        <div class="mydonor-container">
+
+            <!-- Profile Header Card -->
+            <div class="donor-profile-card">
+
+                <div class="profile-top">
+
+                    <div class="avatar-glow">🩸</div>
+
+                    <div class="user-details">
+
+                        <div class="name-badge-row">
+
+                            <h2>Sakib Hasan</h2>
+
+                            <span class="blood-group-tag">
+                                B+ Donor
+                            </span>
+
+                        </div>
+
+                        <p class="location-text">
+                            Dhaka, Bangladesh · Member since Jan 2024
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="profile-stats-row">
+
+                    <div class="p-stat">
+                        <span class="val">4</span>
+                        <span class="lbl">Total Donations</span>
+                    </div>
+
+                    <div class="p-stat">
+                        <span class="val">12</span>
+                        <span class="lbl">Lives Impacted</span>
+                    </div>
+
+                    <div class="p-stat">
+                        <span class="val bold">Jul 28, 2026</span>
+                        <span class="lbl">Last Donated</span>
+                    </div>
+
+                    <div class="p-stat">
+                        <span class="val bold">Oct 28, 2026</span>
+                        <span class="lbl">Next Eligible</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Availability Card -->
+            <div class="availability-card">
+
+                <div class="avail-header">
+
+                    <div>
+                        <h3>Donor Availability</h3>
+
+                        <p>
+                            You are visible to hospitals and patients needing
+                            your blood group.
+                        </p>
+                    </div>
+
+                    <div class="toggle-container">
+
+                        <span class="status-lbl">
+                            Available to Donate
+                        </span>
+
+                        <label class="switch">
+
+                            <input
+                                type="checkbox"
+                                checked
+                            >
+
+                            <span class="slider round"></span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <div class="avail-alert-box">
+
+                    <span class="live-dot"></span>
+
+                    <p>
+                        Your profile is live. You'll receive alerts for B+
+                        and O+ requests within 25 km of Dhaka.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Eligibility Progress Card -->
+            <div class="eligibility-card">
+
+                <h3>Next Donation Eligibility</h3>
+
+                <div class="progress-labels">
+
+                    <span>Recovery progress</span>
+
+                    <span class="days-count">
+                        <b>86</b> / 90 days
+                    </span>
+
+                </div>
+
+                <div class="eligibility-progress-bar">
+
+                    <div
+                        class="fill-progress"
+                        style="width: 95%;"
+                    ></div>
+
+                </div>
+
+                <p class="eligibility-text">
+                    Eligible to donate again on
+                    <b>Oct 28, 2026</b> — just 4 days away.
+                </p>
+
+            </div>
+
+
+            <!-- Donation History Section -->
+            <div class="history-section">
+
+                <h2 class="history-title">
+                    Donation History
+                </h2>
+
+                <div class="timeline-wrapper">
+
+
+                    <!-- Item 1 -->
+                    <div class="timeline-item">
+
+                        <div class="timeline-node"></div>
+
+                        <div class="history-card">
+
+                            <div class="h-card-left">
+
+                                <div class="b-badge">B+</div>
+
+                                <div>
+
+                                    <h4>Square Hospital</h4>
+
+                                    <p>
+                                        Dhaka · Recipient: Nusrat Akter
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="h-card-right">
+
+                                <span class="h-date">
+                                    Jul 28, 2026
+                                </span>
+
+                                <span class="badge-completed">
+                                    COMPLETED
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Item 2 -->
+                    <div class="timeline-item">
+
+                        <div class="timeline-node"></div>
+
+                        <div class="history-card">
+
+                            <div class="h-card-left">
+
+                                <div class="b-badge">B+</div>
+
+                                <div>
+
+                                    <h4>
+                                        Dhaka Medical College Hospital
+                                    </h4>
+
+                                    <p>
+                                        Dhaka · Recipient: Anonymous
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="h-card-right">
+
+                                <span class="h-date">
+                                    Apr 12, 2026
+                                </span>
+
+                                <span class="badge-completed">
+                                    COMPLETED
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Item 3 -->
+                    <div class="timeline-item">
+
+                        <div class="timeline-node"></div>
+
+                        <div class="history-card">
+
+                            <div class="h-card-left">
+
+                                <div class="b-badge">B+</div>
+
+                                <div>
+
+                                    <h4>Evercare Hospital</h4>
+
+                                    <p>
+                                        Dhaka · Recipient: Rafiul Islam
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="h-card-right">
+
+                                <span class="h-date">
+                                    Jan 05, 2026
+                                </span>
+
+                                <span class="badge-completed">
+                                    COMPLETED
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Item 4 -->
+                    <div class="timeline-item">
+
+                        <div class="timeline-node"></div>
+
+                        <div class="history-card">
+
+                            <div class="h-card-left">
+
+                                <div class="b-badge">B+</div>
+
+                                <div>
+
+                                    <h4>Labaid Specialized Hospital</h4>
+
+                                    <p>
+                                        Dhaka · Recipient: Anonymous
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="h-card-right">
+
+                                <span class="h-date">
+                                    Sep 19, 2025
+                                </span>
+
+                                <span class="badge-completed">
+                                    COMPLETED
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script src="js/main.js"></script>
+
+
+    <!-- ================= AUTH MODAL ================= -->
+    <div
+        id="authModal"
+        class="modal-overlay"
+        style="display: none;"
+    >
+
+        <div class="modal-container">
+
+            <button
+                class="modal-close-btn"
+                onclick="closeModal()"
+            >
+                ✕
+            </button>
+
+
+            <div class="modal-logo">
+
+                <span class="drop-icon">🩸</span>
+
+                <span>
+                    Blood<b>Link</b>
+                </span>
+
+            </div>
+
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs">
+
+                <button
+                    id="tab-signin-btn"
+                    class="auth-tab-btn active"
+                    onclick="switchAuthTab('signin')"
+                >
+                    Sign In
+                </button>
+
+                <button
+                    id="tab-register-btn"
+                    class="auth-tab-btn"
+                    onclick="switchAuthTab('register')"
+                >
+                    Register
+                </button>
+
+            </div>
+
+
+            <!-- Sign In Form -->
+            <form
+                id="form-signin"
+                class="auth-form"
+                onsubmit="event.preventDefault();"
+            >
+
+                <div class="input-group">
+
+                    <label>EMAIL</label>
+
+                    <input
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>PASSWORD</label>
+
+                    <input
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn-auth-submit"
+                >
+                    Sign In
+                </button>
+
+
+                <p class="auth-switch-text">
+
+                    Don't have an account?
+
+                    <a
+                        href="javascript:void(0)"
+                        onclick="switchAuthTab('register')"
+                    >
+                        Register
+                    </a>
+
+                </p>
+
+            </form>
+
+
+            <!-- Register Form -->
+            <form
+                id="form-register"
+                class="auth-form"
+                style="display: none;"
+                onsubmit="event.preventDefault();"
+            >
+
+                <div class="input-group">
+
+                    <label>FULL NAME</label>
+
+                    <input
+                        type="text"
+                        placeholder="Md. Rahim"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>EMAIL</label>
+
+                    <input
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>PASSWORD</label>
+
+                    <input
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>BLOOD GROUP</label>
+
+                    <select required>
+
+                        <option
+                            value=""
+                            disabled
+                            selected
+                        >
+                            Select your blood group
+                        </option>
+
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn-auth-submit"
+                >
+                    Register Account
+                </button>
+
+
+                <p class="auth-switch-text">
+
+                    Already have an account?
+
+                    <a
+                        href="javascript:void(0)"
+                        onclick="switchAuthTab('signin')"
+                    >
+                        Sign In
+                    </a>
+
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Blood Request Modal -->
+<div id="request-modal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="modal-logo">
+        <span class="drop-icon">🩸</span>
+        <span>Blood<b>Link</b></span>
+      </div>
+      <button class="modal-close" id="close-request-modal">&times;</button>
+    </div>
+
+    <h3 style="margin-bottom: 15px; color: #fff;">Post Blood Request</h3>
+
+    <form id="request-form">
+      <div class="form-group">
+        <label>PATIENT NAME</label>
+        <input type="text" id="req-patient-name" placeholder="e.g. Md. Karim" required>
+      </div>
+
+      <div class="form-group">
+        <label>BLOOD GROUP</label>
+        <select id="req-blood-group" required>
+          <option value="" disabled selected>Select blood group</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>HOSPITAL & LOCATION</label>
+        <input type="text" id="req-hospital" placeholder="e.g. Dhaka Medical College" required>
+      </div>
+
+      <div class="form-group">
+        <label>CONTACT NUMBER</label>
+        <input type="tel" id="req-contact" placeholder="017XXXXXXXX" required>
+      </div>
+
+      <div class="form-group">
+        <label>BAGS NEEDED</label>
+        <input type="number" id="req-bags" min="1" value="1" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Submit Request</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

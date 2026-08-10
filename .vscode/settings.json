@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 1000,
+            "driver": "SQLite",
+            "name": "BloodLink",
+            "database": "${workspaceFolder:bloodlink}/bloodlink.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
