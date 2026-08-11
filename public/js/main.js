@@ -2,6 +2,9 @@
  * BloodLink - Core Application Logic
  */
 
+// Live Backend Base URL
+const API_BASE_URL = 'https://bloodlink-2d1x.onrender.com';
+
 document.addEventListener("DOMContentLoaded", () => {
     // Initialize default page view state
     showPage("home");
@@ -23,6 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
             filterByBloodGroup(e.target.value);
         });
     }
+
+    // Sign In & Register Form Submissions
+    setupAuthFormListeners();
 });
 
 /* ================= PAGE NAVIGATION ================= */
@@ -63,14 +69,12 @@ function showPage(pageId) {
  * @param {HTMLElement} btnElement - Active button element
  */
 function filterRequests(category, btnElement) {
-    // Update active state on tab buttons
     const tabs = document.querySelectorAll(".filter-tabs .tab-btn");
     tabs.forEach((tab) => tab.classList.remove("active"));
     if (btnElement) {
         btnElement.classList.add("active");
     }
 
-    // Filter card visibility based on data-category attribute or critical class
     const cards = document.querySelectorAll("#page-requests .cards-grid .req-card");
 
     cards.forEach((card) => {
@@ -106,9 +110,6 @@ function filterByBloodGroup(selectedGroup) {
 
 /* ================= AUTH MODAL & TABS ================= */
 
-/**
- * Displays the Authentication Modal defaults to Sign In view.
- */
 function openModal() {
     const authModal = document.getElementById("authModal");
     if (authModal) {
@@ -117,9 +118,6 @@ function openModal() {
     }
 }
 
-/**
- * Displays the Authentication Modal pre-selected to Register view.
- */
 function openRegisterModal() {
     const authModal = document.getElementById("authModal");
     if (authModal) {
@@ -128,9 +126,6 @@ function openRegisterModal() {
     }
 }
 
-/**
- * Hides the Authentication Modal.
- */
 function closeModal() {
     const authModal = document.getElementById("authModal");
     if (authModal) {
@@ -138,10 +133,6 @@ function closeModal() {
     }
 }
 
-/**
- * Switches between Sign In and Register forms inside the modal.
- * @param {string} tab - Selected auth tab ('signin' or 'register')
- */
 function switchAuthTab(tab) {
     const formSignin = document.getElementById("form-signin");
     const formRegister = document.getElementById("form-register");
@@ -163,10 +154,6 @@ function switchAuthTab(tab) {
 
 /* ================= USER ACTIONS ================= */
 
-/**
- * Handles the click response action on emergency request cards.
- * @param {HTMLElement} btn - Clicked button element
- */
 function handleRespond(btn) {
     if (btn.textContent.trim() === "Responded") return;
 
@@ -178,44 +165,25 @@ function handleRespond(btn) {
     alert("Thank you for offering help! The requester has been notified, and coordinates will open shortly.");
 }
 
-// Donate Now বাটনে ক্লিক করলে রেজিস্ট্রেশন/সাইন-ইন পপআপ ওপেন হবে
+// Donate Now Button
 const donateBtn = document.querySelector('.btn-donate');
-
 if (donateBtn) {
     donateBtn.addEventListener('click', () => {
-        // যদি সাইন-ইন বাটন থাকে, তবে তার ক্লিকে যা ঘটে তা ট্রিগার করবে
-        const signInBtn = document.querySelector('.btn-signin'); // বা তোমার সাইন-ইন বাটনের ক্লাস
+        const signInBtn = document.querySelector('.btn-signin');
         if (signInBtn) {
             signInBtn.click();
+        } else {
+            openRegisterModal();
         }
     });
 }
 
-// Requests Popup Open & Close
-const requestModal = document.getElementById('request-modal');
-const closeRequestBtn = document.getElementById('close-request-modal');
-
-// তোমার রক্তের রিকোয়েস্ট বাটনে এই ক্লাস বা আইডি দিয়ে ক্লিক ইভেন্ট দাও
-document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('open-request-btn')) {
-        requestModal.classList.add('active');
-    }
-});
-
-if (closeRequestBtn) {
-    closeRequestBtn.addEventListener('click', () => {
-        requestModal.classList.remove('active');
-    });
-}
-
+// Request Popup and Form Logic
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // ১. পপআপ খোলা ও বন্ধের কাজ
     const requestModal = document.getElementById('request-modal');
     const closeRequestBtn = document.getElementById('close-request-modal');
 
     document.addEventListener('click', (e) => {
-        // Post Request বাটনে ক্লিক করলে
         if (e.target.classList.contains('open-request-btn') || e.target.id === 'post-request-nav-btn') {
             e.preventDefault();
             if (requestModal) {
@@ -230,58 +198,122 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ২. ফর্মে তথ্য দিয়ে Submit দিলে ডাটাবেজে ডাটা পাঠানোর কাজ
+    // Submit Request Form
     const requestForm = document.getElementById('request-form');
     if (requestForm) {
         requestForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const formData = {
-                patient_name: document.getElementById('req-patient-name').value,
-                blood_group: document.getElementById('req-blood-group').value,
-                hospital: document.getElementById('req-hospital').value,
-                contact_number: document.getElementById('req-contact').value,
-                bags_needed: parseInt(document.getElementById('req-bags').value)
+                patient_name: document.getElementById('req-patient-name') ? document.getElementById('req-patient-name').value : '',
+                blood_group: document.getElementById('req-blood-group') ? document.getElementById('req-blood-group').value : '',
+                hospital: document.getElementById('req-hospital') ? document.getElementById('req-hospital').value : '',
+                contact_number: document.getElementById('req-contact') ? document.getElementById('req-contact').value : '',
+                bags_needed: document.getElementById('req-bags') ? parseInt(document.getElementById('req-bags').value) : 1
             };
 
             try {
-                const response = await fetch('/api/requests', {
+                const response = await fetch(`${API_BASE_URL}/api/requests`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
 
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    alert('🎉 ' + data.message); // সফল মেসেজ দেখাবে
-                    requestForm.reset(); // ফর্ম ফাঁকা করবে
-                    requestModal.classList.remove('active'); // পপআপ বন্ধ করবে
-                    
-                    // পেজ রিলোড দিলে লাইভ ডাটা দেখাবে
-                    location.reload(); 
+                    alert('🎉 ' + (data.message || 'রিকোয়েস্ট সফলভাবে জমা হয়েছে!'));
+                    requestForm.reset();
+                    if (requestModal) requestModal.classList.remove('active');
+                    location.reload();
                 } else {
-                    alert('❌ ' + data.message);
+                    alert('❌ ' + (data.message || 'সমস্যা হয়েছে!'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('রিকোয়েস্ট পাঠাতে সমস্যা হয়েছে!');
+                alert('রিকোয়েস্ট পাঠাতে সমস্যা হয়েছে! নেটওয়ার্ক চেক করুন।');
             }
         });
     }
 });
 
-// ডাটাবেজ থেকে রক্তের রিকোয়েস্টগুলো এনে পেজে দেখানোর ফাংশন
+// Setup Signin & Register Handlers
+function setupAuthFormListeners() {
+    const signinForm = document.getElementById("form-signin");
+    const registerForm = document.getElementById("form-register");
+
+    if (signinForm) {
+        signinForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = signinForm.querySelector('input[type="email"]')?.value || '';
+            const password = signinForm.querySelector('input[type="password"]')?.value || '';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('🎉 সফলভাবে সাইন-ইন করেছেন!');
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert('❌ ' + (data.message || 'সাইন-ইন ব্যর্থ হয়েছে!'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('সাইন-ইন করতে সমস্যা হয়েছে!');
+            }
+        });
+    }
+
+    if (registerForm) {
+        registerForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const inputs = registerForm.querySelectorAll('input, select');
+            const formData = {};
+            inputs.forEach(input => {
+                if (input.name || input.id) {
+                    const key = input.name || input.id;
+                    formData[key] = input.value;
+                }
+            });
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('🎉 অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!');
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert('❌ ' + (data.message || 'রেজিস্ট্রেশন ব্যর্থ হয়েছে!'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('রেজিস্ট্রেশন করতে সমস্যা হয়েছে!');
+            }
+        });
+    }
+}
+
+// Load Blood Requests From Database
 async function loadBloodRequests() {
     try {
-        const response = await fetch('/api/requests');
+        const response = await fetch(`${API_BASE_URL}/api/requests`);
         const data = await response.json();
 
-        if (data.success && data.requests.length > 0) {
-            const requestsContainer = document.getElementById('requests-container'); // তোমার HTML-এর রিকোয়েস্ট কার্ডের কন্টেইনার ID
-            
+        if (data.success && data.requests && data.requests.length > 0) {
+            const requestsContainer = document.getElementById('requests-container');
+
             if (requestsContainer) {
-                requestsContainer.innerHTML = ''; // আগের ডামি/ফেক ডাটা মুছে ফেলবে
+                requestsContainer.innerHTML = '';
 
                 data.requests.forEach(req => {
                     const card = `
@@ -292,7 +324,7 @@ async function loadBloodRequests() {
                             </div>
                             <div class="card-body">
                                 <p>🏥 <strong>হাসপাতাল:</strong> ${req.hospital}</p>
-                                <p>🩸 <strong>প্রয়োজন:</strong> ${req.bags_needed} ব্যাগ</p>
+                                <p>🩸 <strong>প্রয়োজন:</strong> ${req.bags_needed} ব্যাগ</p>
                                 <p>📞 <strong>যোগাযোগ:</strong> ${req.contact_number}</p>
                             </div>
                         </div>
@@ -302,11 +334,9 @@ async function loadBloodRequests() {
             }
         }
     } catch (error) {
-    console.error('Error Details:', error);
-    alert('সমস্যা: ' + error.message);
-
+        console.error('Error Details:', error);
     }
 }
 
-// পেজ লোড হলেই ফাংশনটি কল হবে
+// Load requests when page loads
 loadBloodRequests();
