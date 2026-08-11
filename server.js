@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const setupDatabase = require('./db'); // 👈 db.js এর সাথে সঠিকভাবে লিংক করা হয়েছে
+const setupDatabase = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,11 +13,11 @@ let db;
 
 // ১. রেজিস্টার API (নতুন ইউজার/ডোনার সেভ করবে)
 app.post('/api/register', async (req, res) => {
-    const { name, email, password, blood_group, location } = req.body;
+    const { name, email, password, blood_group, location, phone } = req.body;
     try {
         const result = await db.run(
-            `INSERT INTO users (name, email, password, blood_group, location) VALUES (?, ?, ?, ?, ?)`,
-            [name, email, password, blood_group, location]
+            `INSERT INTO users (name, email, password, blood_group, location, phone) VALUES (?, ?, ?, ?, ?, ?)`,
+            [name, email, password, blood_group, location, phone || '']
         );
         res.json({ success: true, message: 'রেজিস্ট্রেশন সফল হয়েছে!', userId: result.lastID });
     } catch (err) {
@@ -57,7 +57,7 @@ app.get('/api/donors', async (req, res) => {
 app.post('/api/requests', async (req, res) => {
     const { patient_name, blood_group, hospital, contact_number, bags_needed } = req.body;
     
-    console.log("👉 Form Data Received:", req.body); // ফ্রন্টএন্ড থেকে আসা ডাটা চেক করার জন্য
+    console.log("👉 Form Data Received:", req.body);
 
     try {
         await db.run(
@@ -66,15 +66,15 @@ app.post('/api/requests', async (req, res) => {
         );
         res.json({ success: true, message: 'রক্তের রিকোয়েস্ট সফলভাবে পোস্ট হয়েছে!' });
     } catch (err) {
-        console.error('❌ Request Insertion Error:', err.message); // আসল ডাটাবেজ এরর প্রিন্ট করবে
+        console.error('❌ Request Insertion Error:', err.message);
         res.status(500).json({ success: false, message: 'রিকোয়েস্ট সেভ করা যায়নি! কারণ: ' + err.message });
     }
 });
 
-// ৫. রক্তের সব রিকোয়েস্ট দেখার API
+// ৫. রক্তের সব রিকোয়েস্ট দেখার API (ইউজারদের জন্য)
 app.get('/api/requests', async (req, res) => {
     try {
-        const requests = await db.all(`SELECT * FROM blood_requests ORDER BY created_at DESC`);
+        const requests = await db.all(`SELECT *, hospital_location AS hospital FROM blood_requests ORDER BY id DESC`);
         res.json({ success: true, requests });
     } catch (err) {
         console.error('Fetch Requests Error:', err.message);
@@ -84,24 +84,26 @@ app.get('/api/requests', async (req, res) => {
 
 // ================= ADMIN APIS ================= //
 
-// ১. সব ইউজার/ডোনারদের লিস্ট পাওয়ার API
-app.get('/api/admin/users', (req, res) => {
-    db.all("SELECT id, name, email, blood_group, phone, location FROM users", [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: err.message });
-        }
-        res.json({ success: true, users: rows });
-    });
+// ১. সব ইউজার/ডোনারদের লিস্ট পাওয়ার API (অ্যাডমিনের জন্য)
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const users = await db.all("SELECT * FROM users ORDER BY id DESC");
+        res.json({ success: true, users });
+    } catch (err) {
+        console.error('Admin Users Fetch Error:', err.message);
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
-// ২. সব ব্লাড রিকোয়েস্টের লিস্ট পাওয়ার API
-app.get('/api/admin/requests', (req, res) => {
-    db.all("SELECT * FROM requests ORDER BY id DESC", [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: err.message });
-        }
-        res.json({ success: true, requests: rows });
-    });
+// ২. সব ব্লাড রিকোয়েস্টের লিস্ট পাওয়ার API (অ্যাডমিনের জন্য)
+app.get('/api/admin/requests', async (req, res) => {
+    try {
+        const requests = await db.all("SELECT *, hospital_location AS hospital FROM blood_requests ORDER BY id DESC");
+        res.json({ success: true, requests });
+    } catch (err) {
+        console.error('Admin Requests Fetch Error:', err.message);
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
 // সার্ভার চালু করা
