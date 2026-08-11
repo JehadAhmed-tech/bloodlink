@@ -11,11 +11,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
 
-// ১. রেজিস্টার API (সুরক্ষিত ও ফ্লেক্সিবল কোড)
+// ১. রেজিস্টার API (ফ্রন্টএন্ড ফর্মের সাথে ১০০% ম্যাচ করা)
 app.post('/api/register', async (req, res) => {
     const { name, email, password, blood_group, location, phone } = req.body;
     
-    // নাম, ইমেইল বা পাসওয়ার্ড ফাঁকা থাকলে স্পষ্ট মেসেজ দেবে
+    // শুধু নাম, ইমেইল, পাসওয়ার্ড চেক করবে
     if (!name || !email || !password) {
         return res.status(400).json({ success: false, message: 'নাম, ইমেইল এবং পাসওয়ার্ড দেওয়া বাধ্যতামূলক!' });
     }
@@ -27,21 +27,18 @@ app.post('/api/register', async (req, res) => {
                 name,
                 email,
                 password,
-                blood_group || 'A+',
-                location || 'Not Specified',
-                phone || ''
+                blood_group || 'Not Specified',
+                location || 'N/A',
+                phone || 'N/A'
             ]
         );
         res.json({ success: true, message: '🎉 রেজিস্ট্রেশন সফল হয়েছে!', userId: result.lastID });
     } catch (err) {
         console.error('Register Error:', err.message);
-        
-        // যদি ইমেইল সত্যিই আগে থেকে জমা থাকে
-        if (err.message.includes('UNIQUE') || err.message.includes('users.email')) {
-            res.status(400).json({ success: false, message: 'এই ইমেইলটি দিয়ে অলরেডি অ্যাকাউন্ট খোলা আছে! দয়া করে Sign In করুন।' });
+        if (err.message.includes('UNIQUE')) {
+            res.status(400).json({ success: false, message: 'এই ইমেইলটি দিয়ে অলরেডি অ্যাকাউন্ট খোলা আছে! Sign In করুন।' });
         } else {
-            // অন্য কোনো ডাটাবেজ এরর হলে আসল এরর মেসেজ দেখাবে
-            res.status(500).json({ success: false, message: 'ডাটাবেজে সমস্যা হয়েছে: ' + err.message });
+            res.status(500).json({ success: false, message: 'ডাটাবেজে সমস্যা: ' + err.message });
         }
     }
 });
