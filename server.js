@@ -82,6 +82,28 @@ app.get('/api/requests', async (req, res) => {
     }
 });
 
+// ================= ADMIN APIS ================= //
+
+// ১. সব ইউজার/ডোনারদের লিস্ট পাওয়ার API
+app.get('/api/admin/users', (req, res) => {
+    db.all("SELECT id, name, email, blood_group, phone, location FROM users", [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ success: false, message: err.message });
+        }
+        res.json({ success: true, users: rows });
+    });
+});
+
+// ২. সব ব্লাড রিকোয়েস্টের লিস্ট পাওয়ার API
+app.get('/api/admin/requests', (req, res) => {
+    db.all("SELECT * FROM requests ORDER BY id DESC", [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ success: false, message: err.message });
+        }
+        res.json({ success: true, requests: rows });
+    });
+});
+
 // সার্ভার চালু করা
 setupDatabase().then((database) => {
     db = database;

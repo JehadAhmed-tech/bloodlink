@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodLink - Admin Dashboard</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f4f6f9; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        h1 { color: #e11d48; margin-bottom: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h2 { color: #333; margin-bottom: 15px; border-bottom: 2px solid #e11d48; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #e11d48; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .badge { background: #e11d48; color: white; padding: 4px 8px; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🩸 BloodLink Admin Panel</h1>
+
+    <!-- Blood Requests Table -->
+    <div class="card">
+        <h2>📋 সব রক্তের রিকোয়েস্ট</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>রোগীর নাম</th>
+                    <th>গ্রুপ</th>
+                    <th>হাসপাতাল</th>
+                    <th>প্রয়োজন</th>
+                    <th>যোগাযোগ</th>
+                </tr>
+            </thead>
+            <tbody id="requests-table">
+                <tr><td colspan="5" style="text-align:center;">ডাটা লোড হচ্ছে...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Registered Users Table -->
+    <div class="card">
+        <h2>👥 নিবন্ধিত ইউজার/ডোনার তালিকা</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>নাম</th>
+                    <th>ইমেইল</th>
+                    <th>রক্তের গ্রুপ</th>
+                    <th>ফোন নম্বর</th>
+                </tr>
+            </thead>
+            <tbody id="users-table">
+                <tr><td colspan="4" style="text-align:center;">ডাটা লোড হচ্ছে...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'https://bloodlink-2d1x.onrender.com';
+
+    // Fetch Requests
+    fetch(`${API_BASE_URL}/api/admin/requests`)
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('requests-table');
+            tbody.innerHTML = '';
+            if(data.success && data.requests.length > 0) {
+                data.requests.forEach(req => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${req.patient_name || req.name || 'N/A'}</strong></td>
+                            <td><span class="badge">${req.blood_group}</span></td>
+                            <td>${req.hospital || 'N/A'}</td>
+                            <td>${req.bags_needed || 1} ব্যাগ</td>
+                            <td>${req.contact_number || req.phone || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো রিকোয়েস্ট পাওয়া যায়নি।</td></tr>';
+            }
+        })
+        .catch(err => console.error(err));
+
+    // Fetch Users
+    fetch(`${API_BASE_URL}/api/admin/users`)
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('users-table');
+            tbody.innerHTML = '';
+            if(data.success && data.users.length > 0) {
+                data.users.forEach(user => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${user.name || 'N/A'}</strong></td>
+                            <td>${user.email || 'N/A'}</td>
+                            <td><span class="badge">${user.blood_group || user.bloodGroup || 'N/A'}</span></td>
+                            <td>${user.phone || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">কোনো ইউজার পাওয়া যায়নি।</td></tr>';
+            }
+        })
+        .catch(err => console.error(err));
+</script>
+
+</body>
+</html>
