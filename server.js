@@ -11,24 +11,49 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
 
-// ১. রেজিস্টার API (নতুন ইউজার/ডোনার সেভ করবে)
+// ১. রেজিস্টার API (সুরক্ষিত ও ফ্লেক্সিবল কোড)
 app.post('/api/register', async (req, res) => {
     const { name, email, password, blood_group, location, phone } = req.body;
+    
+    // নাম, ইমেইল বা পাসওয়ার্ড ফাঁকা থাকলে স্পষ্ট মেসেজ দেবে
+    if (!name || !email || !password) {
+        return res.status(400).json({ success: false, message: 'নাম, ইমেইল এবং পাসওয়ার্ড দেওয়া বাধ্যতামূলক!' });
+    }
+
     try {
         const result = await db.run(
             `INSERT INTO users (name, email, password, blood_group, location, phone) VALUES (?, ?, ?, ?, ?, ?)`,
-            [name, email, password, blood_group, location, phone || '']
+            [
+                name,
+                email,
+                password,
+                blood_group || 'A+',
+                location || 'Not Specified',
+                phone || ''
+            ]
         );
-        res.json({ success: true, message: 'রেজিস্ট্রেশন সফল হয়েছে!', userId: result.lastID });
+        res.json({ success: true, message: '🎉 রেজিস্ট্রেশন সফল হয়েছে!', userId: result.lastID });
     } catch (err) {
         console.error('Register Error:', err.message);
-        res.status(400).json({ success: false, message: 'ইমেইলটি অলরেডি ব্যবহার করা হয়েছে বা ভুল ডাটা!' });
+        
+        // যদি ইমেইল সত্যিই আগে থেকে জমা থাকে
+        if (err.message.includes('UNIQUE') || err.message.includes('users.email')) {
+            res.status(400).json({ success: false, message: 'এই ইমেইলটি দিয়ে অলরেডি অ্যাকাউন্ট খোলা আছে! দয়া করে Sign In করুন।' });
+        } else {
+            // অন্য কোনো ডাটাবেজ এরর হলে আসল এরর মেসেজ দেখাবে
+            res.status(500).json({ success: false, message: 'ডাটাবেজে সমস্যা হয়েছে: ' + err.message });
+        }
     }
 });
 
 // ২. লগইন API
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'ইমেইল এবং পাসওয়ার্ড দুটিই প্রয়োজন!' });
+    }
+
     try {
         const user = await db.get(`SELECT * FROM users WHERE email = ? AND password = ?`, [email, password]);
         if (user) {
