@@ -11,56 +11,64 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
 
-// ১. রেজিস্টার API (ফ্রন্টএন্ড ফর্মের সাথে ১০০% ম্যাচ করা)
+// ১. রেজিস্টার API (সব ধরনের ইনপুট কি হ্যান্ডেল করার জন্য)
 app.post('/api/register', async (req, res) => {
-    const { name, email, password, blood_group, location, phone } = req.body;
-    
-    // শুধু নাম, ইমেইল, পাসওয়ার্ড চেক করবে
-    if (!name || !email || !password) {
-        return res.status(400).json({ success: false, message: 'নাম, ইমেইল এবং পাসওয়ার্ড দেওয়া বাধ্যতামূলক!' });
-    }
-
     try {
+        console.log("👉 Register Request Body:", req.body); // ব্যাকএন্ড টার্মিনালে ডাটা প্রিন্ট করবে
+
+        // ফ্রন্টএন্ড থেকে আসা যেকোনো ভ্যারিয়েবল নাম সাপোর্ট করবে
+        const name = req.body.name || req.body.fullName || req.body.full_name || req.body.username;
+        const email = req.body.email || req.body.user_email;
+        const password = req.body.password || req.body.pass;
+        const blood_group = req.body.blood_group || req.body.bloodGroup || req.body.blood || 'A+';
+        const location = req.body.location || req.body.address || 'N/A';
+        const phone = req.body.phone || req.body.contact || req.body.mobile || 'N/A';
+
+        // ডাটা চেক
+        if (!name || !email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'নাম, ইমেইল এবং পাসওয়ার্ড সঠিকভাবে পাওয়া যায়নি!' 
+            });
+        }
+
+        // ডাটাবেজে ইনসার্ট
         const result = await db.run(
             `INSERT INTO users (name, email, password, blood_group, location, phone) VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-                name,
-                email,
-                password,
-                blood_group || 'Not Specified',
-                location || 'N/A',
-                phone || 'N/A'
-            ]
+            [name, email, password, blood_group, location, phone]
         );
+
         res.json({ success: true, message: '🎉 রেজিস্ট্রেশন সফল হয়েছে!', userId: result.lastID });
+
     } catch (err) {
-        console.error('Register Error:', err.message);
-        if (err.message.includes('UNIQUE')) {
-            res.status(400).json({ success: false, message: 'এই ইমেইলটি দিয়ে অলরেডি অ্যাকাউন্ট খোলা আছে! Sign In করুন।' });
+        console.error('Register Catch Error:', err.message);
+        if (err.message.includes('UNIQUE') || err.message.includes('users.email')) {
+            res.status(400).json({ success: false, message: 'এই ইমেইলটি দিয়ে অলরেডি অ্যাকাউন্ট খোলা আছে! Sign In করুন।' });
         } else {
-            res.status(500).json({ success: false, message: 'ডাটাবেজে সমস্যা: ' + err.message });
+            res.status(500).json({ success: false, message: 'সার্ভার এরর: ' + err.message });
         }
     }
 });
 
 // ২. লগইন API
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ success: false, message: 'ইমেইল এবং পাসওয়ার্ড দুটিই প্রয়োজন!' });
-    }
-
     try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'ইমেইল ও পাসওয়ার্ড দিন!' });
+        }
+
         const user = await db.get(`SELECT * FROM users WHERE email = ? AND password = ?`, [email, password]);
+        
         if (user) {
             res.json({ success: true, message: 'লগইন সফল!', user });
         } else {
             res.status(401).json({ success: false, message: 'ইমেইল বা পাসওয়ার্ড ভুল!' });
         }
     } catch (err) {
-        console.error('Login Error:', err.message);
-        res.status(500).json({ success: false, message: 'সার্ভার এরর!' });
+        console.error('Login Crash Error:', err);
+        res.status(500).json({ success: false, message: 'লগইন করতে সমস্যা হয়েছে!' });
     }
 });
 
