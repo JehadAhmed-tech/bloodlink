@@ -1,4 +1,4 @@
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
 
@@ -8,36 +8,32 @@ async function setupDatabase() {
         driver: sqlite3.Database
     });
 
-    
+    // Users Table
     await db.exec(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            blood_group TEXT NOT NULL,
-            location TEXT NOT NULL,
-            is_available INTEGER DEFAULT 1,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            name TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            blood_group TEXT,
+            location TEXT,
+            phone TEXT
         )
     `);
 
-    
+    // Blood Requests Table
     await db.exec(`
         CREATE TABLE IF NOT EXISTS blood_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_name TEXT NOT NULL,
-            blood_group TEXT NOT NULL,
-            bags_needed INTEGER NOT NULL,
-            bags_collected INTEGER DEFAULT 0,
-            hospital_location TEXT NOT NULL,
-            urgency TEXT DEFAULT 'Urgent',
-            contact_number TEXT NOT NULL,
+            patient_name TEXT,
+            blood_group TEXT,
+            hospital_location TEXT,
+            contact_number TEXT,
+            bags_needed INTEGER,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
 
-    console.log('✅ SQLite Database Connected & Tables Ready!');
     return db;
 }
 
