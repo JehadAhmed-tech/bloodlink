@@ -1023,102 +1023,89 @@
 
 
             <!-- Register Form -->
-            <form
-                id="form-register"
-                class="auth-form"
-                style="display: none;"
-                onsubmit="event.preventDefault();"
+
+<form
+    id="form-register"
+    class="auth-form"
+    style="display: none;"
+    onsubmit="event.preventDefault();"
+>
+
+    <div class="input-group">
+        <label>FULL NAME</label>
+
+        <input
+            type="text"
+            name="name"
+            placeholder="Md. Rahim"
+            required
+        >
+    </div>
+
+    <div class="input-group">
+        <label>EMAIL</label>
+
+        <input
+            type="email"
+            name="email"
+            placeholder="you@example.com"
+            required
+        >
+    </div>
+
+    <div class="input-group">
+        <label>PASSWORD</label>
+
+        <input
+            type="password"
+            name="password"
+            placeholder="••••••••"
+            required
+        >
+    </div>
+
+    <div class="input-group">
+        <label>BLOOD GROUP</label>
+
+        <select name="blood_group" required>
+            <option
+                value=""
+                disabled
+                selected
             >
+                Select your blood group
+            </option>
 
-                <div class="input-group">
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+        </select>
+    </div>
 
-                    <label>FULL NAME</label>
+    <button
+        type="submit"
+        class="btn-auth-submit"
+    >
+        Register Account
+    </button>
 
-                    <input
-                        type="text"
-                        placeholder="Md. Rahim"
-                        required
-                    >
+    <p class="auth-switch-text">
+        Already have an account?
 
-                </div>
+        <a
+            href="javascript:void(0)"
+            onclick="switchAuthTab('signin')"
+        >
+            Sign In
+        </a>
+    </p>
 
-
-                <div class="input-group">
-
-                    <label>EMAIL</label>
-
-                    <input
-                        type="email"
-                        placeholder="you@example.com"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="input-group">
-
-                    <label>PASSWORD</label>
-
-                    <input
-                        type="password"
-                        placeholder="••••••••"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="input-group">
-
-                    <label>BLOOD GROUP</label>
-
-                    <select required>
-
-                        <option
-                            value=""
-                            disabled
-                            selected
-                        >
-                            Select your blood group
-                        </option>
-
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-
-                    </select>
-
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="btn-auth-submit"
-                >
-                    Register Account
-                </button>
-
-
-                <p class="auth-switch-text">
-
-                    Already have an account?
-
-                    <a
-                        href="javascript:void(0)"
-                        onclick="switchAuthTab('signin')"
-                    >
-                        Sign In
-                    </a>
-
-                </p>
-
-            </form>
+</form>
 
         </div>
 
