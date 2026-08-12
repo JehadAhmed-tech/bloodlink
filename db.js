@@ -21,6 +21,15 @@ async function setupDatabase() {
         )
     `);
 
+    // Add phone column to old databases if it does not exist
+try {
+    await db.exec(`ALTER TABLE users ADD COLUMN phone TEXT`);
+} catch (err) {
+    if (!err.message.includes('duplicate column name')) {
+        throw err;
+    }
+}
+
     // Blood Requests Table
     await db.exec(`
         CREATE TABLE IF NOT EXISTS blood_requests (
