@@ -340,3 +340,30 @@ async function loadBloodRequests() {
 
 // Load requests when page loads
 loadBloodRequests();
+
+// ১. লগইন চেক এবং ইউজারের নাম দেখানো
+(function checkUserLogin() {
+    var loggedUser = localStorage.getItem('user');
+
+    if (!loggedUser) {
+        window.location.href = '/login.html';
+    } else {
+        try {
+            var user = JSON.parse(loggedUser);
+            if (user && user.name) {
+                var userInfoEl = document.getElementById('userInfo');
+                if (userInfoEl) {
+                    userInfoEl.innerText = 'Hello, ' + user.name;
+                }
+            }
+        } catch (e) {
+            console.error('User parse error:', e);
+        }
+    }
+})();
+
+// ২. লগআউট ফাংশন
+function logoutUser() {
+    localStorage.removeItem('user');
+    window.location.href = '/login.html';
+}
