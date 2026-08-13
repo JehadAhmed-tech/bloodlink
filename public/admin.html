@@ -96,14 +96,14 @@
     async function loadAdminData() {
         // 1. Fetch Blood Requests
         try {
-            const reqRes = await fetch('/api/admin/requests');
-            const reqData = await reqRes.json();
-            const reqTable = document.getElementById('requestsTable');
-            
-            if (reqData.success && reqData.requests.length > 0) {
-                document.getElementById('statTotalRequests').innerText = reqData.requests.length;
-                
-                reqTable.innerHTML = reqData.requests.map(r => `
+            const userRes = await fetch('/api/admin/users');
+            const userData = await userRes.json();
+            const userTable = document.getElementById('usersTable');
+
+        if (userData.success && userData.users.length > 0) {
+            document.getElementById('statTotalDonors').innerText = userData.users.length;
+
+                userTable.innerHTML = userData.users.map(u => `
                     <tr>
                         <td><strong>${r.patient_name || 'N/A'}</strong></td>
                         <td><span class="bg-tag">${r.blood_group || 'N/A'}</span></td>
