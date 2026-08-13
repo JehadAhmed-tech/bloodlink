@@ -145,3 +145,15 @@ setupDatabase().then((database) => {
 }).catch(err => {
     console.error("❌ Database connection failed:", err);
 });
+
+// রিকোয়েস্ট মুছে ফেলার এপিআই (Delete API)
+app.delete('/api/admin/requests/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.run(`DELETE FROM blood_requests WHERE id = ?`, [id]);
+        res.json({ success: true, message: 'Request deleted successfully' });
+    } catch (err) {
+        console.error('Delete Error:', err.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
