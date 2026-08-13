@@ -482,3 +482,439 @@ input:checked + .slider:before { transform: translateX(20px); }
 .btn-submit:hover {
   background: #e03228;
 }
+
+/* =========================================
+   RESPONSIVE DESIGN - MOBILE & TABLET
+   ========================================= */
+
+/* Tablet */
+@media (max-width: 900px) {
+
+    .navbar {
+        padding: 14px 4%;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    nav a {
+        margin: 0 8px;
+        font-size: 0.9rem;
+    }
+
+    .nav-btns {
+        gap: 8px;
+    }
+
+    .stats-section {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 30px 4%;
+    }
+
+    .works-grid,
+    .requests-grid,
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .req-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+/* Mobile */
+@media (max-width: 600px) {
+
+    body {
+        overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .logo {
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    nav {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    nav a {
+        margin: 0;
+        padding: 6px 8px;
+        font-size: 0.78rem;
+    }
+
+    .nav-btns {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .nav-btns span {
+        width: 100%;
+        text-align: center;
+        margin-right: 0 !important;
+        margin-bottom: 4px;
+        font-size: 0.85rem;
+    }
+
+    .btn-signin,
+    .btn-donate {
+        padding: 9px 15px;
+        font-size: 0.85rem;
+    }
+
+
+    /* Hero */
+    .hero {
+        padding: 40px 16px 30px;
+    }
+
+    .hero-title {
+        font-size: 2.7rem;
+        line-height: 1.08;
+        margin: 20px 0 14px;
+    }
+
+    .hero-sub {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 25px;
+    }
+
+    .hero-action-btns {
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+
+    .btn-request-main,
+    .btn-secondary {
+        width: 100%;
+        padding: 13px 18px;
+        font-size: 0.9rem;
+    }
+
+
+    /* Search */
+    .search-card-box {
+        width: 100%;
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .search-inputs {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .input-select,
+    .input-text,
+    .btn-search {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .btn-search {
+        padding: 12px;
+    }
+
+
+    /* Stats */
+    .stats-section {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 25px 16px;
+    }
+
+    .stat-box {
+        padding: 20px 10px;
+    }
+
+    .stat-box h2 {
+        font-size: 1.6rem;
+    }
+
+    .stat-box p {
+        font-size: 0.75rem;
+    }
+
+
+    /* Section Titles */
+    .serif-title {
+        font-size: 1.8rem;
+        margin-bottom: 22px;
+    }
+
+
+    /* How It Works */
+    .how-it-works {
+        padding: 40px 16px;
+    }
+
+    .works-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .work-card {
+        padding: 25px 20px;
+    }
+
+
+    /* Live Requests */
+    .live-requests-section {
+        padding: 30px 16px;
+    }
+
+    .section-header {
+        gap: 12px;
+        align-items: center;
+    }
+
+    .section-header .serif-title {
+        font-size: 1.7rem;
+    }
+
+    .btn-view-all {
+        padding: 7px 10px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .requests-grid,
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .req-card {
+        padding: 18px;
+    }
+
+    .card-top {
+        gap: 10px;
+    }
+
+    .details h3 {
+        font-size: 0.95rem;
+    }
+
+    .details span {
+        font-size: 0.72rem;
+    }
+
+
+    /* Request Page */
+    .requests-page-container {
+        padding: 30px 16px;
+    }
+
+    .req-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .req-stat-card {
+        padding: 18px;
+    }
+
+    .req-stat-card .num {
+        font-size: 1.8rem;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .filter-tabs {
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .tab-btn {
+        white-space: nowrap;
+        padding: 9px 14px;
+    }
+
+    .blood-group-select {
+        width: 100%;
+    }
+
+
+    /* My Donor */
+    .mydonor-container {
+        padding: 25px 16px;
+        gap: 16px;
+    }
+
+    .donor-profile-card,
+    .availability-card,
+    .eligibility-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .profile-top {
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .avatar-glow {
+        width: 52px;
+        height: 52px;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .name-badge-row {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .name-badge-row h2 {
+        font-size: 1.3rem;
+    }
+
+    .profile-stats-row {
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .avail-header {
+        gap: 12px;
+    }
+
+    .avail-header h3 {
+        font-size: 1rem;
+    }
+
+
+    /* History */
+    .history-card {
+        padding: 13px 14px;
+        gap: 10px;
+    }
+
+    .h-card-left {
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .h-card-left h4 {
+        font-size: 0.9rem;
+    }
+
+    .h-card-left p {
+        font-size: 0.7rem;
+    }
+
+
+    /* CTA */
+    .cta-section {
+        padding: 30px 16px 50px;
+    }
+
+    .cta-banner {
+        padding: 40px 16px;
+        border-radius: 18px;
+    }
+
+    .btn-donate-banner {
+        width: 100%;
+        padding: 13px 20px;
+    }
+
+
+    /* Auth / Request Modal */
+    .modal-overlay {
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    .modal-container {
+        width: 100%;
+        max-width: 100%;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+        padding: 22px 18px;
+        border-radius: 16px;
+    }
+
+    .modal-logo {
+        font-size: 1.2rem;
+        margin-bottom: 18px;
+    }
+
+    .auth-tabs {
+        margin-bottom: 18px;
+    }
+
+    .auth-form {
+        gap: 14px;
+    }
+
+    .input-group input,
+    .input-group select,
+    .form-group input,
+    .form-group select {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .btn-auth-submit,
+    .btn-submit {
+        width: 100%;
+    }
+}
+
+
+/* Very Small Phones */
+@media (max-width: 380px) {
+
+    .hero-title {
+        font-size: 2.3rem;
+    }
+
+    .stats-section {
+        grid-template-columns: 1fr;
+    }
+
+    .req-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    nav a {
+        font-size: 0.72rem;
+        padding: 5px 6px;
+    }
+
+    .btn-signin,
+    .btn-donate {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-view-all {
+        width: 100%;
+    }
+}
