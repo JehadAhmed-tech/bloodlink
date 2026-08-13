@@ -169,11 +169,10 @@ function handleRespond(btn) {
 const donateBtn = document.querySelector('.btn-donate');
 if (donateBtn) {
     donateBtn.addEventListener('click', () => {
-        // সরাসরি পোস্ট রিকোয়েস্ট (রক্ত চাওয়ার) ফর্ম খুলবে
-        if (typeof openRequestModal === 'function') {
-            openRequestModal();
-        } else if (typeof openModal === 'function') {
-            openModal();
+        const requestModal = document.getElementById('request-modal');
+
+        if (requestModal) {
+            requestModal.classList.add('active');
         }
     });
 }
