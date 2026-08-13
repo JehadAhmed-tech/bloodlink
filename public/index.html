@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+    // Check if user is logged in
+    const loggedUser = localStorage.getItem('user');
+    if (!loggedUser) {
+        window.location.href = '/login.html'; // Direct to login page if not logged in
+    }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BloodLink - Emergency Blood Donation</title>
