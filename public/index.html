@@ -68,32 +68,38 @@
             </div>
 
             <!-- Search Box -->
-            <div class="search-card-box">
-                <span class="search-label">FIND DONORS NEARBY</span>
+        <div class="search-card-box">
+        <span class="search-label">FIND DONORS NEARBY</span>
 
-                <div class="search-inputs">
-                    <select class="input-select">
-                        <option>Blood Group</option>
-                        <option>A+</option>
-                        <option>A-</option>
-                        <option>B+</option>
-                        <option>B-</option>
-                        <option>O+</option>
-                        <option>O-</option>
-                        <option>AB+</option>
-                        <option>AB-</option>
-                    </select>
+        <div class="search-inputs">
 
-                    <input
-                        type="text"
-                        class="input-text"
-                        placeholder="City or Hospital Name"
-                    >
+        <select class="input-select" id="donorBloodGroup">
+            <option>Blood Group</option>
+            <option>A+</option>
+            <option>A-</option>
+            <option>B+</option>
+            <option>B-</option>
+            <option>O+</option>
+            <option>O-</option>
+            <option>AB+</option>
+            <option>AB-</option>
+        </select>
 
-                    <button class="btn-search">🔍 Search</button>
-                </div>
-            </div>
-        </section>
+        <input
+            type="text"
+            class="input-text"
+            id="donorLocation"
+            placeholder="City or Hospital Name"
+        >
+
+        <button class="btn-search" id="donorSearchBtn">
+            🔍 Search
+        </button>
+
+    </div>
+
+    <div id="donorSearchResults" style="display: none;"></div>
+</div>
 
         <!-- Stats Section -->
         <section class="stats-section">

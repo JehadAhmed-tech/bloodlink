@@ -366,3 +366,127 @@ function logoutUser() {
     localStorage.removeItem('user');
     window.location.href = '/login.html';
 }
+
+/* ================= DONOR SEARCH ================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const searchBtn = document.getElementById("donorSearchBtn");
+    const bloodGroup = document.getElementById("donorBloodGroup");
+    const locationInput = document.getElementById("donorLocation");
+    const resultContainer = document.getElementById("donorSearchResults");
+
+    if (!searchBtn || !bloodGroup || !locationInput || !resultContainer) {
+        return;
+    }
+
+    searchBtn.addEventListener("click", async () => {
+
+        const selectedBlood = bloodGroup.value;
+        const location = locationInput.value.trim().toLowerCase();
+
+        try {
+
+            const response = await fetch(`${API_BASE_URL}/api/donors`);
+            const data = await response.json();
+
+            if (!data.success) {
+                alert("Donor data load করা যায়নি!");
+                return;
+            }
+
+            let matchedDonors = data.donors;
+
+            // Blood group filter
+            if (selectedBlood !== "Blood Group") {
+                matchedDonors = matchedDonors.filter(
+                    donor => donor.blood_group === selectedBlood
+                );
+            }
+
+            // Location filter
+            if (location) {
+                matchedDonors = matchedDonors.filter(donor =>
+                    (donor.location || "").toLowerCase().includes(location)
+                );
+            }
+
+            resultContainer.style.display = "block";
+
+            if (matchedDonors.length === 0) {
+                resultContainer.innerHTML = `
+                    <div style="
+                        margin-top: 20px;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 12px;
+                        background: rgba(255,255,255,0.05);
+                    ">
+                        ❌ No matching donors found.
+                    </div>
+                `;
+                return;
+            }
+
+            resultContainer.innerHTML = `
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px;">
+                        🩸 ${matchedDonors.length} Donor(s) Found
+                    </h3>
+
+                    <div style="
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        gap: 15px;
+                    ">
+                        ${matchedDonors.map(donor => `
+                            <div style="
+                                padding: 18px;
+                                border-radius: 12px;
+                                background: rgba(255,255,255,0.06);
+                                border: 1px solid rgba(255,255,255,0.1);
+                            ">
+
+                                <h3 style="margin: 0 0 8px;">
+                                    ${donor.name || "Unknown Donor"}
+                                </h3>
+
+                                <p style="margin: 5px 0;">
+                                    🩸 Blood Group:
+                                    <strong>${donor.blood_group || "N/A"}</strong>
+                                </p>
+
+                                <p style="margin: 5px 0;">
+                                    📍 ${donor.location || "Location not provided"}
+                                </p>
+
+                                <p style="margin: 5px 0;">
+                                    📞 ${donor.phone || "Phone not provided"}
+                                </p>
+
+                            </div>
+                        `).join("")}
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+
+            console.error("Donor Search Error:", error);
+
+            resultContainer.style.display = "block";
+
+            resultContainer.innerHTML = `
+                <div style="
+                    margin-top: 20px;
+                    padding: 20px;
+                    text-align: center;
+                    border-radius: 12px;
+                ">
+                    ❌ Donor search failed. Please try again.
+                </div>
+            `;
+        }
+    });
+
+});

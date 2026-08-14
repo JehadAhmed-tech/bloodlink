@@ -75,11 +75,19 @@ app.post('/api/login', async (req, res) => {
 // ৩. রক্তদাতাদের লিস্ট দেখার API
 app.get('/api/donors', async (req, res) => {
     try {
-        const donors = await db.all(`SELECT id, name, blood_group, location, is_available FROM users`);
+        const donors = await db.all(`
+            SELECT id, name, email, blood_group, location, phone
+            FROM users
+            ORDER BY id DESC
+        `);
+
         res.json({ success: true, donors });
     } catch (err) {
         console.error('Fetch Donors Error:', err.message);
-        res.status(500).json({ success: false, message: 'ডাটা আনতে সমস্যা হয়েছে!' });
+        res.status(500).json({
+            success: false,
+            message: 'ডাটা আনতে সমস্যা হয়েছে!'
+        });
     }
 });
 
