@@ -31,7 +31,7 @@ async function loadAdminData(){
    const rt=document.getElementById('requestsTable');
    rt.innerHTML=requests.length?requests.map(r=>`<tr><td><strong>${esc(r.patient_name)}</strong></td><td><span class="bg-tag">${esc(r.blood_group)}</span></td><td>${esc(r.hospital_location||r.hospital)}</td><td>${esc(r.bags_needed)}</td><td>${esc(r.contact_number)}</td><td>${esc(r.urgency||'Urgent')}</td><td><button class="btn-delete" onclick="deleteRequest(${Number(r.id)})">Delete</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty-msg">No blood requests found.</td></tr>';
    const ut=document.getElementById('usersTable');
-   ut.innerHTML=users.length?users.map(u=>`<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.email)}</td><td><span class="bg-tag">${esc(u.blood_group)}</span></td><td>${esc(u.location||'N/A')}</td><td>${esc(u.phone||'N/A')}</td><td>${Number(u.is_available)!==0?'Available':'Unavailable'}</td></tr>`).join(''):'<tr><td colspan="6" class="empty-msg">No users found.</td></tr>';
+   ut.innerHTML=users.length?users.map(u=>`<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.email)}</td><td><span class="bg-tag">${esc(u.blood_group)}</span></td><td>${esc(u.location||'N/A')}</td><td>${esc(u.phone||'N/A')}</td><td>Available</td></tr>`).join(''):'<tr><td colspan="6" class="empty-msg">No users found.</td></tr>';
    status.textContent='Live data loaded successfully.';
  }catch(e){console.error(e);status.textContent='❌ '+e.message;}
 }
