@@ -231,3 +231,5 @@ setupDatabase()
         console.error('❌ Database connection failed:', err);
         process.exit(1);
     });
+
+    
