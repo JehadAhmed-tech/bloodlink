@@ -68,38 +68,34 @@
             </div>
 
             <!-- Search Box -->
-        <div class="search-card-box">
-        <span class="search-label">FIND DONORS NEARBY</span>
+            <div class="search-card-box">
+                <span class="search-label">FIND DONORS NEARBY</span>
 
-        <div class="search-inputs">
+                <div class="search-inputs">
+                    <select class="input-select" id="donorBloodGroup">
+                        <option>Blood Group</option>
+                        <option>A+</option>
+                        <option>A-</option>
+                        <option>B+</option>
+                        <option>B-</option>
+                        <option>O+</option>
+                        <option>O-</option>
+                        <option>AB+</option>
+                        <option>AB-</option>
+                    </select>
 
-        <select class="input-select" id="donorBloodGroup">
-            <option>Blood Group</option>
-            <option>A+</option>
-            <option>A-</option>
-            <option>B+</option>
-            <option>B-</option>
-            <option>O+</option>
-            <option>O-</option>
-            <option>AB+</option>
-            <option>AB-</option>
-        </select>
+                    <input
+                        type="text"
+                        class="input-text"
+                        id="donorLocation"
+                        placeholder="City or Hospital Name"
+                    >
 
-        <input
-            type="text"
-            class="input-text"
-            id="donorLocation"
-            placeholder="City or Hospital Name"
-        >
-
-        <button class="btn-search" id="donorSearchBtn">
-            🔍 Search
-        </button>
-
-    </div>
-
-    <div id="donorSearchResults" style="display: none;"></div>
-</div>
+                    <button class="btn-search" id="donorSearchBtn" type="button">🔍 Search</button>
+                </div>
+                <div id="donorSearchResults" style="display: none;"></div>
+            </div>
+        </section>
 
         <!-- Stats Section -->
         <section class="stats-section">
@@ -1076,6 +1072,16 @@
             placeholder="••••••••"
             required
         >
+    </div>
+
+    <div class="input-group">
+        <label>LOCATION / CITY</label>
+        <input type="text" name="location" id="reg-location" placeholder="Dhaka" required>
+    </div>
+
+    <div class="input-group">
+        <label>PHONE NUMBER</label>
+        <input type="tel" name="phone" id="reg-phone" placeholder="017XXXXXXXX" required>
     </div>
 
     <div class="input-group">

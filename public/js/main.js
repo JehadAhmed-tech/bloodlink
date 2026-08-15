@@ -1,251 +1,288 @@
 /**
  * BloodLink - Core Application Logic
+ * Fixed version: navigation, auth persistence, request modal, donor search,
+ * request loading, filters and My Donor profile.
  */
 
-// Live Backend Base URL
-const API_BASE_URL = 'https://bloodlink-2d1x.onrender.com';
+const API_BASE_URL = window.location.origin;
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Initialize default page view state
-    showPage("home");
-
-    // Close auth modal when clicking on the overlay background
-    const authModal = document.getElementById("authModal");
-    if (authModal) {
-        authModal.addEventListener("click", (e) => {
-            if (e.target === authModal) {
-                closeModal();
-            }
-        });
+function getLoggedUser() {
+    try {
+        return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch (error) {
+        console.error('User parse error:', error);
+        return null;
     }
+}
 
-    // Attach listener to dropdown filter for dynamic updates
-    const bloodSelect = document.querySelector(".blood-group-select");
-    if (bloodSelect) {
-        bloodSelect.addEventListener("change", (e) => {
-            filterByBloodGroup(e.target.value);
-        });
-    }
-
-    // Sign In & Register Form Submissions
-    setupAuthFormListeners();
-});
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 /* ================= PAGE NAVIGATION ================= */
-
-/**
- * Switches views between Home, Requests, and My Donor pages.
- * @param {string} pageId - Target page identifier ('home', 'requests', 'mydonor')
- */
 function showPage(pageId) {
-    const pages = ["home", "requests", "mydonor"];
+    const pages = ['home', 'requests', 'mydonor'];
 
     pages.forEach((id) => {
-        const pageElement = document.getElementById(`page-${id}`);
-        const navElement = document.getElementById(`nav-${id}`);
+        const page = document.getElementById(`page-${id}`);
+        const nav = document.getElementById(`nav-${id}`);
 
-        if (pageElement) {
-            pageElement.style.display = id === pageId ? "block" : "none";
-        }
-
-        if (navElement) {
-            if (id === pageId) {
-                navElement.classList.add("active");
-            } else {
-                navElement.classList.remove("active");
-            }
-        }
+        if (page) page.style.display = id === pageId ? 'block' : 'none';
+        if (nav) nav.classList.toggle('active', id === pageId);
     });
 
-    // Scroll back to top when switching pages
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (pageId === 'requests') loadBloodRequests();
+    if (pageId === 'mydonor') loadMyDonorProfile();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ================= REQUEST FILTERS ================= */
-
-/**
- * Filters request cards by urgency category (All, Critical, Urgent, Moderate).
- * @param {string} category - Priority status filter
- * @param {HTMLElement} btnElement - Active button element
- */
-function filterRequests(category, btnElement) {
-    const tabs = document.querySelectorAll(".filter-tabs .tab-btn");
-    tabs.forEach((tab) => tab.classList.remove("active"));
-    if (btnElement) {
-        btnElement.classList.add("active");
-    }
-
-    const cards = document.querySelectorAll("#page-requests .cards-grid .req-card");
-
-    cards.forEach((card) => {
-        const isCritical = card.classList.contains("critical");
-        const cardCategory = card.getAttribute("data-category") || (isCritical ? "critical" : "moderate");
-
-        if (category === "all" || cardCategory === category) {
-            card.style.display = "block";
-        } else {
-            card.style.display = "none";
-        }
-    });
-}
-
-/**
- * Filters request cards by blood group dropdown selection.
- * @param {string} selectedGroup - Selected blood type (e.g., 'A+', 'O-')
- */
-function filterByBloodGroup(selectedGroup) {
-    const cards = document.querySelectorAll("#page-requests .cards-grid .req-card");
-
-    cards.forEach((card) => {
-        const bloodBadge = card.querySelector(".blood-badge");
-        const bloodGroup = bloodBadge ? bloodBadge.textContent.trim() : "";
-
-        if (selectedGroup === "All Blood Groups" || bloodGroup === selectedGroup) {
-            card.style.display = "block";
-        } else {
-            card.style.display = "none";
-        }
-    });
-}
-
-/* ================= AUTH MODAL & TABS ================= */
-
+/* ================= AUTH MODAL ================= */
 function openModal() {
-    const authModal = document.getElementById("authModal");
-    if (authModal) {
-        authModal.style.display = "flex";
-        switchAuthTab("signin");
-    }
+    const modal = document.getElementById('authModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    switchAuthTab('signin');
 }
 
 function openRegisterModal() {
-    const authModal = document.getElementById("authModal");
-    if (authModal) {
-        authModal.style.display = "flex";
-        switchAuthTab("register");
-    }
+    const modal = document.getElementById('authModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    switchAuthTab('register');
 }
 
 function closeModal() {
-    const authModal = document.getElementById("authModal");
-    if (authModal) {
-        authModal.style.display = "none";
-    }
+    const modal = document.getElementById('authModal');
+    if (modal) modal.style.display = 'none';
 }
 
 function switchAuthTab(tab) {
-    const formSignin = document.getElementById("form-signin");
-    const formRegister = document.getElementById("form-register");
-    const tabSigninBtn = document.getElementById("tab-signin-btn");
-    const tabRegisterBtn = document.getElementById("tab-register-btn");
+    const signin = document.getElementById('form-signin');
+    const register = document.getElementById('form-register');
+    const signinBtn = document.getElementById('tab-signin-btn');
+    const registerBtn = document.getElementById('tab-register-btn');
 
-    if (tab === "signin") {
-        if (formSignin) formSignin.style.display = "block";
-        if (formRegister) formRegister.style.display = "none";
-        if (tabSigninBtn) tabSigninBtn.classList.add("active");
-        if (tabRegisterBtn) tabRegisterBtn.classList.remove("active");
-    } else if (tab === "register") {
-        if (formSignin) formSignin.style.display = "none";
-        if (formRegister) formRegister.style.display = "block";
-        if (tabSigninBtn) tabSigninBtn.classList.remove("active");
-        if (tabRegisterBtn) tabRegisterBtn.classList.add("active");
-    }
+    const isSignin = tab === 'signin';
+    if (signin) signin.style.display = isSignin ? 'flex' : 'none';
+    if (register) register.style.display = isSignin ? 'none' : 'flex';
+    if (signinBtn) signinBtn.classList.toggle('active', isSignin);
+    if (registerBtn) registerBtn.classList.toggle('active', !isSignin);
 }
 
-/* ================= USER ACTIONS ================= */
-
-function handleRespond(btn) {
-    if (btn.textContent.trim() === "Responded") return;
-
-    btn.textContent = "Responded";
-    btn.style.backgroundColor = "#22c55e";
-    btn.style.color = "#ffffff";
-    btn.disabled = true;
-
-    alert("Thank you for offering help! The requester has been notified, and coordinates will open shortly.");
+/* ================= REQUEST MODAL ================= */
+function openRequestModal() {
+    const modal = document.getElementById('request-modal');
+    if (modal) modal.classList.add('active');
 }
 
-// Donate Now Button
-const donateBtn = document.querySelector('.btn-donate');
-if (donateBtn) {
-    donateBtn.addEventListener('click', () => {
-        const requestModal = document.getElementById('request-modal');
+function closeRequestModal() {
+    const modal = document.getElementById('request-modal');
+    if (modal) modal.classList.remove('active');
+}
 
-        if (requestModal) {
-            requestModal.classList.add('active');
-        }
+/* ================= REQUEST FILTERS ================= */
+function filterRequests(category, btnElement) {
+    document.querySelectorAll('.filter-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+    if (btnElement) btnElement.classList.add('active');
+
+    document.querySelectorAll('#page-requests .req-card').forEach(card => {
+        const categoryFromData = card.dataset.category;
+        const categoryFromClass = card.classList.contains('critical') ? 'critical' : null;
+        const cardCategory = categoryFromData || categoryFromClass || 'moderate';
+        card.style.display = category === 'all' || cardCategory === category ? '' : 'none';
     });
 }
 
-// Request Popup and Form Logic
-document.addEventListener('DOMContentLoaded', () => {
-    const requestModal = document.getElementById('request-modal');
-    const closeRequestBtn = document.getElementById('close-request-modal');
-
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('open-request-btn') || e.target.id === 'post-request-nav-btn') {
-            e.preventDefault();
-            if (requestModal) {
-                requestModal.classList.add('active');
-            }
-        }
+function filterByBloodGroup(selectedGroup) {
+    document.querySelectorAll('#page-requests .cards-grid .req-card').forEach(card => {
+        const badge = card.querySelector('.blood-badge');
+        const group = badge ? badge.textContent.trim() : '';
+        card.style.display = selectedGroup === 'All Blood Groups' || group === selectedGroup ? '' : 'none';
     });
+}
 
-    if (closeRequestBtn) {
-        closeRequestBtn.addEventListener('click', () => {
-            requestModal.classList.remove('active');
+/* ================= DONOR SEARCH ================= */
+async function searchDonors() {
+    const groupEl = document.getElementById('donorBloodGroup');
+    const locationEl = document.getElementById('donorLocation');
+    const resultEl = document.getElementById('donorSearchResults');
+
+    if (!groupEl || !locationEl || !resultEl) return;
+
+    const selectedGroup = groupEl.value.trim();
+    const locationQuery = locationEl.value.trim().toLowerCase();
+
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div class="donor-search-loading">Searching donors...</div>';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/donors`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Could not load donors');
+        }
+
+        const donors = Array.isArray(data.donors) ? data.donors : [];
+        const matched = donors.filter(donor => {
+            const bloodOk = !selectedGroup || selectedGroup === 'Blood Group' || donor.blood_group === selectedGroup;
+            const location = String(donor.location || '').toLowerCase();
+            const locationOk = !locationQuery || location.includes(locationQuery);
+            return bloodOk && locationOk;
         });
+
+        if (!matched.length) {
+            resultEl.innerHTML = `
+                <div class="donor-search-empty">
+                    <strong>No donors found.</strong>
+                    <span>Try another blood group or location.</span>
+                </div>`;
+            return;
+        }
+
+        resultEl.innerHTML = `
+            <div class="donor-search-header">
+                🩸 ${matched.length} donor${matched.length === 1 ? '' : 's'} found
+            </div>
+            <div class="donor-results-grid">
+                ${matched.map(donor => `
+                    <div class="donor-result-card">
+                        <div class="donor-result-top">
+                            <div class="blood-badge">${escapeHtml(donor.blood_group || 'N/A')}</div>
+                            <div>
+                                <h3>${escapeHtml(donor.name || 'Unknown Donor')}</h3>
+                                <p>${escapeHtml(donor.location || 'Location not provided')}</p>
+                            </div>
+                        </div>
+                        <div class="donor-result-info">
+                            <span>📞 ${escapeHtml(donor.phone || 'Phone not provided')}</span>
+                            <span>✉️ ${escapeHtml(donor.email || 'Email not provided')}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>`;
+    } catch (error) {
+        console.error('Donor Search Error:', error);
+        resultEl.innerHTML = '<div class="donor-search-empty">❌ Donor search failed. Please try again.</div>';
+    }
+}
+
+/* ================= REQUESTS ================= */
+async function submitBloodRequest(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('request-form');
+    const modal = document.getElementById('request-modal');
+    if (!form) return;
+
+    const payload = {
+        patient_name: document.getElementById('req-patient-name')?.value.trim(),
+        blood_group: document.getElementById('req-blood-group')?.value,
+        hospital: document.getElementById('req-hospital')?.value.trim(),
+        contact_number: document.getElementById('req-contact')?.value.trim(),
+        bags_needed: Number(document.getElementById('req-bags')?.value || 1)
+    };
+
+    if (!payload.patient_name || !payload.blood_group || !payload.hospital || !payload.contact_number || payload.bags_needed < 1) {
+        alert('Please fill in all blood request fields correctly.');
+        return;
     }
 
-    // Submit Request Form
-    const requestForm = document.getElementById('request-form');
-    if (requestForm) {
-        requestForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const formData = {
-                patient_name: document.getElementById('req-patient-name') ? document.getElementById('req-patient-name').value : '',
-                blood_group: document.getElementById('req-blood-group') ? document.getElementById('req-blood-group').value : '',
-                hospital: document.getElementById('req-hospital') ? document.getElementById('req-hospital').value : '',
-                contact_number: document.getElementById('req-contact') ? document.getElementById('req-contact').value : '',
-                bags_needed: document.getElementById('req-bags') ? parseInt(document.getElementById('req-bags').value) : 1
-            };
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/requests`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('🎉 ' + (data.message || 'রিকোয়েস্ট সফলভাবে জমা হয়েছে!'));
-                    requestForm.reset();
-                    if (requestModal) requestModal.classList.remove('active');
-                    location.reload();
-                } else {
-                    alert('❌ ' + (data.message || 'সমস্যা হয়েছে!'));
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('রিকোয়েস্ট পাঠাতে সমস্যা হয়েছে! নেটওয়ার্ক চেক করুন।');
-            }
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/requests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
-    }
-});
+        const data = await response.json();
 
-// Setup Signin & Register Handlers
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Request could not be saved');
+        }
+
+        alert('🎉 Blood request posted successfully!');
+        form.reset();
+        closeRequestModal();
+        await loadBloodRequests();
+        showPage('requests');
+    } catch (error) {
+        console.error('Request submit error:', error);
+        alert(`❌ ${error.message || 'Could not post the request.'}`);
+    }
+}
+
+async function loadBloodRequests() {
+    const container = document.getElementById('requests-container');
+    if (!container) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/requests`);
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Failed to load requests');
+
+        const requests = Array.isArray(data.requests) ? data.requests : [];
+        if (!requests.length) {
+            container.innerHTML = '<div class="empty-msg">No blood requests found.</div>';
+            updateRequestStats([]);
+            return;
+        }
+
+        container.innerHTML = requests.map(req => `
+            <div class="req-card dynamic-request-card" data-category="${escapeHtml((req.urgency || 'moderate').toLowerCase())}" data-request-id="${escapeHtml(req.id)}">
+                <div class="card-top">
+                    <div class="blood-badge">${escapeHtml(req.blood_group || 'N/A')}</div>
+                    <div class="details">
+                        <h3>${escapeHtml(req.patient_name || 'Patient')}</h3>
+                        <span>${escapeHtml(req.hospital || req.hospital_location || 'Hospital not provided')}</span>
+                    </div>
+                    <span class="badge-tag ${escapeHtml((req.urgency || 'urgent').toLowerCase())}">${escapeHtml(String(req.urgency || 'URGENT').toUpperCase())}</span>
+                </div>
+                <div class="progress-info">
+                    <span>Blood bags needed</span>
+                    <span class="count red">${escapeHtml(req.bags_needed || 0)}</span>
+                </div>
+                <div class="progress-bar"><div class="fill" style="width: ${Math.min(100, Math.round((Number(req.bags_collected || 0) / Math.max(1, Number(req.bags_needed || 1))) * 100))}%;"></div></div>
+                <div class="card-footer">
+                    <span class="time">${req.created_at ? new Date(req.created_at + 'Z').toLocaleString() : 'Recently'}</span>
+                    <button class="btn-respond" onclick="handleRespond(this)">Respond</button>
+                </div>
+            </div>
+        `).join('');
+
+        updateRequestStats(requests);
+    } catch (error) {
+        console.error('Load requests error:', error);
+        container.innerHTML = '<div class="empty-msg">❌ Could not load blood requests.</div>';
+    }
+}
+
+function updateRequestStats(requests) {
+    const stats = document.querySelectorAll('#page-requests .req-stat-card .num');
+    const critical = requests.filter(r => String(r.urgency || '').toLowerCase() === 'critical').length;
+    const urgent = requests.filter(r => String(r.urgency || '').toLowerCase() === 'urgent').length;
+    if (stats.length >= 1) stats[0].textContent = requests.length;
+    if (stats.length >= 2) stats[1].textContent = critical;
+    if (stats.length >= 3) stats[2].textContent = urgent;
+}
+
+/* ================= AUTH ================= */
 function setupAuthFormListeners() {
-    const signinForm = document.getElementById("form-signin");
-    const registerForm = document.getElementById("form-register");
+    const signinForm = document.getElementById('form-signin');
+    const registerForm = document.getElementById('form-register');
 
-    if (signinForm) {
-        signinForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const email = signinForm.querySelector('input[type="email"]')?.value || '';
-            const password = signinForm.querySelector('input[type="password"]')?.value || '';
+    if (signinForm && !signinForm.dataset.bound) {
+        signinForm.dataset.bound = '1';
+        signinForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const email = signinForm.querySelector('input[type="email"]')?.value.trim();
+            const password = signinForm.querySelector('input[type="password"]')?.value;
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/login`, {
@@ -254,31 +291,30 @@ function setupAuthFormListeners() {
                     body: JSON.stringify({ email, password })
                 });
                 const data = await response.json();
-                if (data.success) {
-                    alert('🎉 সফলভাবে সাইন-ইন করেছেন!');
-                    closeModal();
-                    location.reload();
-                } else {
-                    alert('❌ ' + (data.message || 'সাইন-ইন ব্যর্থ হয়েছে!'));
+
+                if (!response.ok || !data.success || !data.user) {
+                    throw new Error(data.message || 'Sign in failed');
                 }
-            } catch (err) {
-                console.error(err);
-                alert('সাইন-ইন করতে সমস্যা হয়েছে!');
+
+                // IMPORTANT: persist the logged-in user so index.html does not redirect to login.
+                localStorage.setItem('user', JSON.stringify(data.user));
+                alert('🎉 Sign in successful!');
+                closeModal();
+                updateUserUI();
+                loadMyDonorProfile();
+            } catch (error) {
+                console.error('Sign in error:', error);
+                alert(`❌ ${error.message || 'Sign in failed.'}`);
             }
         });
     }
 
-    if (registerForm) {
-        registerForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const inputs = registerForm.querySelectorAll('input, select');
-            const formData = {};
-            inputs.forEach(input => {
-                if (input.name || input.id) {
-                    const key = input.name || input.id;
-                    formData[key] = input.value;
-                }
-            });
+    if (registerForm && !registerForm.dataset.bound) {
+        registerForm.dataset.bound = '1';
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = Object.fromEntries(new FormData(registerForm).entries());
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/register`, {
@@ -287,206 +323,147 @@ function setupAuthFormListeners() {
                     body: JSON.stringify(formData)
                 });
                 const data = await response.json();
-                if (data.success) {
-                    alert('🎉 অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!');
-                    closeModal();
-                    location.reload();
-                } else {
-                    alert('❌ ' + (data.message || 'রেজিস্ট্রেশন ব্যর্থ হয়েছে!'));
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Registration failed');
                 }
-            } catch (err) {
-                console.error(err);
-                alert('রেজিস্ট্রেশন করতে সমস্যা হয়েছে!');
+
+                alert('🎉 Account created successfully! Now sign in with your email and password.');
+                registerForm.reset();
+                switchAuthTab('signin');
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert(`❌ ${error.message || 'Registration failed.'}`);
             }
         });
     }
 }
 
-// Load Blood Requests From Database
-async function loadBloodRequests() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/requests`);
-        const data = await response.json();
+/* ================= MY DONOR ================= */
+function loadMyDonorProfile() {
+    const user = getLoggedUser();
+    if (!user) return;
 
-        if (data.success && data.requests && data.requests.length > 0) {
-            const requestsContainer = document.getElementById('requests-container');
+    const nameEl = document.querySelector('.name-badge-row h2');
+    const groupEl = document.querySelector('.blood-group-tag');
+    const locationEl = document.querySelector('.location-text');
 
-            if (requestsContainer) {
-                requestsContainer.innerHTML = '';
-
-                data.requests.forEach(req => {
-                    const card = `
-                        <div class="request-card">
-                            <div class="card-header">
-                                <span class="blood-badge">${req.blood_group}</span>
-                                <h4>${req.patient_name}</h4>
-                            </div>
-                            <div class="card-body">
-                                <p>🏥 <strong>হাসপাতাল:</strong> ${req.hospital}</p>
-                                <p>🩸 <strong>প্রয়োজন:</strong> ${req.bags_needed} ব্যাগ</p>
-                                <p>📞 <strong>যোগাযোগ:</strong> ${req.contact_number}</p>
-                            </div>
-                        </div>
-                    `;
-                    requestsContainer.innerHTML += card;
-                });
-            }
-        }
-    } catch (error) {
-        console.error('Error Details:', error);
+    if (nameEl) nameEl.textContent = user.name || 'BloodLink User';
+    if (groupEl) groupEl.textContent = `${user.blood_group || 'N/A'} Donor`;
+    if (locationEl) locationEl.textContent = `${user.location && user.location !== 'N/A' ? user.location : 'Location not provided'} · BloodLink member`;
+    const availabilityToggle = document.querySelector('.availability-card input[type="checkbox"]');
+    if (availabilityToggle && typeof user.is_available !== 'undefined') {
+        availabilityToggle.checked = Boolean(user.is_available);
     }
 }
 
-// Load requests when page loads
-loadBloodRequests();
+function updateUserUI() {
+    const user = getLoggedUser();
+    const userInfo = document.getElementById('userInfo');
+    if (userInfo) userInfo.textContent = user?.name ? `Hello, ${user.name}` : '';
+    loadMyDonorProfile();
+}
 
-// ১. লগইন চেক এবং ইউজারের নাম দেখানো
-(function checkUserLogin() {
-    var loggedUser = localStorage.getItem('user');
-
-    if (!loggedUser) {
-        window.location.href = '/login.html';
-    } else {
-        try {
-            var user = JSON.parse(loggedUser);
-            if (user && user.name) {
-                var userInfoEl = document.getElementById('userInfo');
-                if (userInfoEl) {
-                    userInfoEl.innerText = 'Hello, ' + user.name;
-                }
-            }
-        } catch (e) {
-            console.error('User parse error:', e);
-        }
-    }
-})();
-
-// ২. লগআউট ফাংশন
 function logoutUser() {
     localStorage.removeItem('user');
     window.location.href = '/login.html';
 }
 
-/* ================= DONOR SEARCH ================= */
+/* ================= RESPOND ================= */
+async function handleRespond(btn) {
+    if (!btn || btn.disabled) return;
 
-document.addEventListener("DOMContentLoaded", () => {
+    const card = btn.closest('[data-request-id]');
+    const requestId = card?.dataset.requestId;
+    const user = getLoggedUser();
 
-    const searchBtn = document.getElementById("donorSearchBtn");
-    const bloodGroup = document.getElementById("donorBloodGroup");
-    const locationInput = document.getElementById("donorLocation");
-    const resultContainer = document.getElementById("donorSearchResults");
-
-    if (!searchBtn || !bloodGroup || !locationInput || !resultContainer) {
+    if (!requestId) {
+        alert('Request id is missing.');
         return;
     }
 
-    searchBtn.addEventListener("click", async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/requests/${requestId}/respond`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ donor_id: user?.id || null })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Could not record response.');
 
-        const selectedBlood = bloodGroup.value;
-        const location = locationInput.value.trim().toLowerCase();
+        btn.textContent = 'Responded';
+        btn.style.backgroundColor = '#22c55e';
+        btn.style.color = '#fff';
+        btn.disabled = true;
+        alert('Thank you for offering help! Your response has been recorded.');
+    } catch (error) {
+        console.error('Respond error:', error);
+        alert(`❌ ${error.message || 'Could not respond to this request.'}`);
+    }
+}
 
+/* ================= INITIALIZATION ================= */
+document.addEventListener('DOMContentLoaded', () => {
+    // Search
+    document.getElementById('donorSearchBtn')?.addEventListener('click', searchDonors);
+    document.getElementById('donorLocation')?.addEventListener('keydown', event => {
+        if (event.key === 'Enter') searchDonors();
+    });
+
+    // Request modal
+    document.getElementById('post-request-nav-btn')?.addEventListener('click', event => {
+        event.preventDefault();
+        openRequestModal();
+    });
+    document.getElementById('close-request-modal')?.addEventListener('click', closeRequestModal);
+    document.getElementById('request-form')?.addEventListener('submit', submitBloodRequest);
+    document.getElementById('request-modal')?.addEventListener('click', event => {
+        if (event.target.id === 'request-modal') closeRequestModal();
+    });
+
+    // Auth modal
+    document.getElementById('authModal')?.addEventListener('click', event => {
+        if (event.target.id === 'authModal') closeModal();
+    });
+
+    // Request-page blood group filter
+    document.querySelector('.blood-group-select')?.addEventListener('change', event => {
+        filterByBloodGroup(event.target.value);
+    });
+
+    setupAuthFormListeners();
+    updateUserUI();
+
+    // Persist donor availability from My Donor page.
+    const availabilityToggle = document.querySelector('.availability-card input[type="checkbox"]');
+    availabilityToggle?.addEventListener('change', async event => {
+        const user = getLoggedUser();
+        if (!user?.id) return;
         try {
-
-            const response = await fetch(`${API_BASE_URL}/api/donors`);
+            const response = await fetch(`${API_BASE_URL}/api/donors/${user.id}/availability`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ available: event.target.checked })
+            });
             const data = await response.json();
-
-            if (!data.success) {
-                alert("Donor data load করা যায়নি!");
-                return;
-            }
-
-            let matchedDonors = data.donors;
-
-            // Blood group filter
-            if (selectedBlood !== "Blood Group") {
-                matchedDonors = matchedDonors.filter(
-                    donor => donor.blood_group === selectedBlood
-                );
-            }
-
-            // Location filter
-            if (location) {
-                matchedDonors = matchedDonors.filter(donor =>
-                    (donor.location || "").toLowerCase().includes(location)
-                );
-            }
-
-            resultContainer.style.display = "block";
-
-            if (matchedDonors.length === 0) {
-                resultContainer.innerHTML = `
-                    <div style="
-                        margin-top: 20px;
-                        padding: 20px;
-                        text-align: center;
-                        border-radius: 12px;
-                        background: rgba(255,255,255,0.05);
-                    ">
-                        ❌ No matching donors found.
-                    </div>
-                `;
-                return;
-            }
-
-            resultContainer.innerHTML = `
-                <div style="margin-top: 20px;">
-                    <h3 style="margin-bottom: 15px;">
-                        🩸 ${matchedDonors.length} Donor(s) Found
-                    </h3>
-
-                    <div style="
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                        gap: 15px;
-                    ">
-                        ${matchedDonors.map(donor => `
-                            <div style="
-                                padding: 18px;
-                                border-radius: 12px;
-                                background: rgba(255,255,255,0.06);
-                                border: 1px solid rgba(255,255,255,0.1);
-                            ">
-
-                                <h3 style="margin: 0 0 8px;">
-                                    ${donor.name || "Unknown Donor"}
-                                </h3>
-
-                                <p style="margin: 5px 0;">
-                                    🩸 Blood Group:
-                                    <strong>${donor.blood_group || "N/A"}</strong>
-                                </p>
-
-                                <p style="margin: 5px 0;">
-                                    📍 ${donor.location || "Location not provided"}
-                                </p>
-
-                                <p style="margin: 5px 0;">
-                                    📞 ${donor.phone || "Phone not provided"}
-                                </p>
-
-                            </div>
-                        `).join("")}
-                    </div>
-                </div>
-            `;
-
+            if (!response.ok || !data.success) throw new Error(data.message || 'Could not update availability.');
+            localStorage.setItem('user', JSON.stringify(data.user));
         } catch (error) {
-
-            console.error("Donor Search Error:", error);
-
-            resultContainer.style.display = "block";
-
-            resultContainer.innerHTML = `
-                <div style="
-                    margin-top: 20px;
-                    padding: 20px;
-                    text-align: center;
-                    border-radius: 12px;
-                ">
-                    ❌ Donor search failed. Please try again.
-                </div>
-            `;
+            console.error('Availability update error:', error);
+            event.target.checked = !event.target.checked;
+            alert(`❌ ${error.message || 'Could not update availability.'}`);
         }
     });
 
+    loadBloodRequests();
+    showPage('home');
 });
+
+// Keep the existing HTML inline login protection, but also make the UI update safely.
+(function checkUserLogin() {
+    const loggedUser = getLoggedUser();
+    if (!loggedUser && !window.location.pathname.endsWith('/login.html')) {
+        // The main page requires authentication in the current project.
+        window.location.href = '/login.html';
+    }
+})();

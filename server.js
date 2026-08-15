@@ -5,163 +5,229 @@ const setupDatabase = require('./db');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
 
-// ১. রেজিস্টার API (সব ধরনের ইনপুট কি হ্যান্ডেল করার জন্য)
+function requireDb(req, res, next) {
+    if (!db) return res.status(503).json({ success: false, message: 'Database is starting. Please try again.' });
+    next();
+}
+
+app.use('/api', requireDb);
+
+// ================= AUTH =================
 app.post('/api/register', async (req, res) => {
     try {
-        console.log("👉 Register Request Body:", req.body); // ব্যাকএন্ড টার্মিনালে ডাটা প্রিন্ট করবে
+        const name = String(req.body.name || req.body.fullName || '').trim();
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const password = String(req.body.password || '');
+        const blood_group = String(req.body.blood_group || req.body.bloodGroup || '').trim();
+        const location = String(req.body.location || req.body.address || 'N/A').trim() || 'N/A';
+        const phone = String(req.body.phone || req.body.contact || req.body.mobile || 'N/A').trim() || 'N/A';
 
-        // ফ্রন্টএন্ড থেকে আসা যেকোনো ভ্যারিয়েবল নাম সাপোর্ট করবে
-        const name = req.body.name || req.body.fullName || req.body.full_name || req.body.username;
-        const email = req.body.email || req.body.user_email;
-        const password = req.body.password || req.body.pass;
-        const blood_group = req.body.blood_group || req.body.bloodGroup || req.body.blood || 'A+';
-        const location = req.body.location || req.body.address || 'N/A';
-        const phone = req.body.phone || req.body.contact || req.body.mobile || 'N/A';
-
-        // ডাটা চেক
-        if (!name || !email || !password) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'নাম, ইমেইল এবং পাসওয়ার্ড সঠিকভাবে পাওয়া যায়নি!' 
-            });
+        if (!name || !email || !password || !blood_group) {
+            return res.status(400).json({ success: false, message: 'Name, email, password and blood group are required.' });
         }
 
-        // ডাটাবেজে ইনসার্ট
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+        }
+
         const result = await db.run(
-            `INSERT INTO users (name, email, password, blood_group, location, phone) VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO users (name, email, password, blood_group, location, phone, is_available)
+             VALUES (?, ?, ?, ?, ?, ?, 1)`,
             [name, email, password, blood_group, location, phone]
         );
 
-        res.json({ success: true, message: '🎉 রেজিস্ট্রেশন সফল হয়েছে!', userId: result.lastID });
-
+        res.json({
+            success: true,
+            message: 'Registration successful!',
+            userId: result.lastID
+        });
     } catch (err) {
-        console.error('Register Catch Error:', err.message);
-        if (err.message.includes('UNIQUE') || err.message.includes('users.email')) {
-            res.status(400).json({ success: false, message: 'এই ইমেইলটি দিয়ে অলরেডি অ্যাকাউন্ট খোলা আছে! Sign In করুন।' });
-        } else {
-            res.status(500).json({ success: false, message: 'সার্ভার এরর: ' + err.message });
+        console.error('Register Error:', err.message);
+        if (/UNIQUE|users\.email/i.test(err.message)) {
+            return res.status(400).json({ success: false, message: 'This email already has an account. Please sign in.' });
         }
+        res.status(500).json({ success: false, message: 'Server error: ' + err.message });
     }
 });
 
-// ২. লগইন API
 app.post('/api/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const password = String(req.body.password || '');
 
         if (!email || !password) {
-            return res.status(400).json({ success: false, message: 'ইমেইল ও পাসওয়ার্ড দিন!' });
+            return res.status(400).json({ success: false, message: 'Email and password are required.' });
         }
 
-        const user = await db.get(`SELECT * FROM users WHERE email = ? AND password = ?`, [email, password]);
-        
-        if (user) {
-            res.json({ success: true, message: 'লগইন সফল!', user });
-        } else {
-            res.status(401).json({ success: false, message: 'ইমেইল বা পাসওয়ার্ড ভুল!' });
-        }
+        const user = await db.get(
+            `SELECT id, name, email, blood_group, location, phone, is_available, created_at
+             FROM users WHERE email = ? AND password = ?`,
+            [email, password]
+        );
+
+        if (!user) return res.status(401).json({ success: false, message: 'Incorrect email or password.' });
+        res.json({ success: true, message: 'Login successful!', user });
     } catch (err) {
-        console.error('Login Crash Error:', err);
-        res.status(500).json({ success: false, message: 'লগইন করতে সমস্যা হয়েছে!' });
+        console.error('Login Error:', err.message);
+        res.status(500).json({ success: false, message: 'Could not sign in.' });
     }
 });
 
-// ৩. রক্তদাতাদের লিস্ট দেখার API
+// ================= DONORS =================
 app.get('/api/donors', async (req, res) => {
     try {
         const donors = await db.all(`
-            SELECT id, name, email, blood_group, location, phone
+            SELECT id, name, email, blood_group, location, phone, is_available, created_at
             FROM users
+            WHERE COALESCE(is_available, 1) = 1
             ORDER BY id DESC
         `);
-
         res.json({ success: true, donors });
     } catch (err) {
         console.error('Fetch Donors Error:', err.message);
-        res.status(500).json({
-            success: false,
-            message: 'ডাটা আনতে সমস্যা হয়েছে!'
-        });
+        res.status(500).json({ success: false, message: 'Could not load donors.' });
     }
 });
 
-// ৪. রক্তের রিকোয়েস্ট পোস্ট করার API
-app.post('/api/requests', async (req, res) => {
-    const { patient_name, blood_group, hospital, contact_number, bags_needed } = req.body;
-    
-    console.log("👉 Form Data Received:", req.body);
-
+app.patch('/api/donors/:id/availability', async (req, res) => {
     try {
-        await db.run(
-            `INSERT INTO blood_requests (patient_name, blood_group, hospital_location, contact_number, bags_needed) VALUES (?, ?, ?, ?, ?)`,
-            [patient_name, blood_group, hospital, String(contact_number), Number(bags_needed)]
-        );
-        res.json({ success: true, message: 'রক্তের রিকোয়েস্ট সফলভাবে পোস্ট হয়েছে!' });
+        const id = Number(req.params.id);
+        const available = req.body.available ? 1 : 0;
+        if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'Invalid donor id.' });
+
+        await db.run(`UPDATE users SET is_available = ? WHERE id = ?`, [available, id]);
+        const user = await db.get(`SELECT id, name, email, blood_group, location, phone, is_available, created_at FROM users WHERE id = ?`, [id]);
+        if (!user) return res.status(404).json({ success: false, message: 'Donor not found.' });
+
+        res.json({ success: true, user });
     } catch (err) {
-        console.error('❌ Request Insertion Error:', err.message);
-        res.status(500).json({ success: false, message: 'রিকোয়েস্ট সেভ করা যায়নি! কারণ: ' + err.message });
+        console.error('Availability Error:', err.message);
+        res.status(500).json({ success: false, message: 'Could not update availability.' });
     }
 });
 
-// ৫. রক্তের সব রিকোয়েস্ট দেখার API (ইউজারদের জন্য)
+// ================= BLOOD REQUESTS =================
+app.post('/api/requests', async (req, res) => {
+    try {
+        const patient_name = String(req.body.patient_name || '').trim();
+        const blood_group = String(req.body.blood_group || '').trim();
+        const hospital = String(req.body.hospital || req.body.hospital_location || '').trim();
+        const contact_number = String(req.body.contact_number || '').trim();
+        const bags_needed = Number(req.body.bags_needed);
+        const urgency = String(req.body.urgency || 'Urgent').trim();
+
+        if (!patient_name || !blood_group || !hospital || !contact_number || !Number.isInteger(bags_needed) || bags_needed < 1) {
+            return res.status(400).json({ success: false, message: 'Please fill all request fields correctly.' });
+        }
+
+        const result = await db.run(
+            `INSERT INTO blood_requests
+             (patient_name, blood_group, hospital_location, contact_number, bags_needed, bags_collected, urgency)
+             VALUES (?, ?, ?, ?, ?, 0, ?)`,
+            [patient_name, blood_group, hospital, contact_number, bags_needed, urgency]
+        );
+
+        res.json({ success: true, message: 'Blood request posted successfully!', requestId: result.lastID });
+    } catch (err) {
+        console.error('Request Insertion Error:', err.message);
+        res.status(500).json({ success: false, message: 'Could not save the request.' });
+    }
+});
+
 app.get('/api/requests', async (req, res) => {
     try {
-        const requests = await db.all(`SELECT *, hospital_location AS hospital FROM blood_requests ORDER BY id DESC`);
+        const requests = await db.all(`
+            SELECT id, patient_name, blood_group, bags_needed, bags_collected,
+                   hospital_location, hospital_location AS hospital, urgency,
+                   contact_number, created_at
+            FROM blood_requests
+            ORDER BY id DESC
+        `);
         res.json({ success: true, requests });
     } catch (err) {
         console.error('Fetch Requests Error:', err.message);
-        res.status(500).json({ success: false, message: 'ডাটা আনতে সমস্যা হয়েছে!' });
+        res.status(500).json({ success: false, message: 'Could not load requests.' });
     }
 });
 
-// ================= ADMIN APIS ================= //
+app.post('/api/requests/:id/respond', async (req, res) => {
+    try {
+        const requestId = Number(req.params.id);
+        const donorId = req.body.donor_id ? Number(req.body.donor_id) : null;
+        if (!Number.isInteger(requestId) || requestId < 1) return res.status(400).json({ success: false, message: 'Invalid request id.' });
 
-// ১. সব ইউজার/ডোনারদের লিস্ট পাওয়ার API (অ্যাডমিনের জন্য)
+        await db.run(
+            `INSERT INTO donation_responses (request_id, donor_id, status) VALUES (?, ?, 'Responded')`,
+            [requestId, donorId]
+        );
+        res.json({ success: true, message: 'Response recorded successfully.' });
+    } catch (err) {
+        if (/UNIQUE/i.test(err.message)) {
+            return res.json({ success: true, message: 'You already responded to this request.' });
+        }
+        console.error('Response Error:', err.message);
+        res.status(500).json({ success: false, message: 'Could not record response.' });
+    }
+});
+
+// ================= ADMIN =================
 app.get('/api/admin/users', async (req, res) => {
     try {
-        const users = await db.all("SELECT * FROM users ORDER BY id DESC");
+        const users = await db.all(`SELECT * FROM users ORDER BY id DESC`);
         res.json({ success: true, users });
     } catch (err) {
-        console.error('Admin Users Fetch Error:', err.message);
+        console.error('Admin Users Error:', err.message);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ২. সব ব্লাড রিকোয়েস্টের লিস্ট পাওয়ার API (অ্যাডমিনের জন্য)
 app.get('/api/admin/requests', async (req, res) => {
     try {
-        const requests = await db.all("SELECT *, hospital_location AS hospital FROM blood_requests ORDER BY id DESC");
+        const requests = await db.all(`
+            SELECT id, patient_name, blood_group, bags_needed, bags_collected,
+                   hospital_location, hospital_location AS hospital, urgency,
+                   contact_number, created_at
+            FROM blood_requests ORDER BY id DESC
+        `);
         res.json({ success: true, requests });
     } catch (err) {
-        console.error('Admin Requests Fetch Error:', err.message);
+        console.error('Admin Requests Error:', err.message);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// সার্ভার চালু করা
-setupDatabase().then((database) => {
-    db = database;
-    app.listen(PORT, () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-}).catch(err => {
-    console.error("❌ Database connection failed:", err);
-});
-
-// রিকোয়েস্ট মুছে ফেলার এপিআই (Delete API)
 app.delete('/api/admin/requests/:id', async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'Invalid request id.' });
         await db.run(`DELETE FROM blood_requests WHERE id = ?`, [id]);
-        res.json({ success: true, message: 'Request deleted successfully' });
+        res.json({ success: true, message: 'Request deleted successfully.' });
     } catch (err) {
         console.error('Delete Error:', err.message);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(500).json({ success: false, message: 'Server error.' });
     }
 });
+
+app.get('/api/health', (req, res) => res.json({ success: true, status: 'ok' }));
+
+// ================= START =================
+setupDatabase()
+    .then(database => {
+        db = database;
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on http://localhost:${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('❌ Database connection failed:', err);
+        process.exit(1);
+    });
