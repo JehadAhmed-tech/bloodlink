@@ -85,16 +85,34 @@ app.post('/api/login', async (req, res) => {
 // ================= DONORS =================
 app.get('/api/donors', async (req, res) => {
     try {
-        const donors = await db.all(`
-            SELECT id, name, email, blood_group, location, phone, is_available, created_at
-            FROM users
+        const { blood_group, location } = req.query;
+
+        let query = `
+            SELECT id, name, email, blood_group, location, phone, is_available 
+            FROM users 
             WHERE COALESCE(is_available, 1) = 1
-            ORDER BY id DESC
-        `);
+        `;
+        let params = [];
+
+        // ব্লাড গ্রুপ ফিল্টার (যদি সিলেক্ট থাকে)
+        if (blood_group) {
+            query += ' AND blood_group = ?';
+            params.push(blood_group);
+        }
+
+        // লোকেশন বা হাসপাতালের নাম - যেকোনো আংশিক টেক্সট মিলাবে
+        if (location && location.trim() !== '') {
+            query += ' AND LOWER(location) LIKE LOWER(?)';
+            params.push(`%${location.trim()}%`);
+        }
+
+        query += ' ORDER BY id DESC';
+
+        const donors = await db.all(query, params);
         res.json({ success: true, donors });
     } catch (err) {
         console.error('Fetch Donors Error:', err.message);
-        res.status(500).json({ success: false, message: 'Could not load donors.' });
+        res.status(500).json({ success: false, message: 'Could not fetch donors' });
     }
 });
 
