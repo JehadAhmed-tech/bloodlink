@@ -116,26 +116,29 @@ async function searchDonors() {
     if (!groupEl || !locationEl || !resultEl) return;
 
     const selectedGroup = groupEl.value.trim();
-    const locationQuery = locationEl.value.trim().toLowerCase();
+    const locationQuery = locationEl.value.trim();
 
     resultEl.style.display = 'block';
     resultEl.innerHTML = '<div class="donor-search-loading">Searching donors...</div>';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/donors`);
+        // ব্লাড গ্রুপ এবং লোকেশন ব্যাকএন্ড API-তে কোয়েরি প্যারামিটার হিসেবে পাঠানো হচ্ছে
+        let url = `${API_BASE_URL}/api/donors?`;
+        if (selectedGroup && selectedGroup !== 'Blood Group') {
+            url += `blood_group=${encodeURIComponent(selectedGroup)}&`;
+        }
+        if (locationQuery) {
+            url += `location=${encodeURIComponent(locationQuery)}`;
+        }
+
+        const response = await fetch(url);
         const data = await response.json();
 
         if (!response.ok || !data.success) {
             throw new Error(data.message || 'Could not load donors');
         }
 
-        const donors = Array.isArray(data.donors) ? data.donors : [];
-        const matched = donors.filter(donor => {
-            const bloodOk = !selectedGroup || selectedGroup === 'Blood Group' || donor.blood_group === selectedGroup;
-            const location = String(donor.location || '').toLowerCase();
-            const locationOk = !locationQuery || location.includes(locationQuery);
-            return bloodOk && locationOk;
-        });
+        const matched = Array.isArray(data.donors) ? data.donors : [];
 
         if (!matched.length) {
             resultEl.innerHTML = `
